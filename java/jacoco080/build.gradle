@@ -14,7 +14,44 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-jacoco {
-    toolVersion = "0.7.9"
+def jacocoVersion = null
+
+// Run jacocoReport with jacoco 0.8.0 (2017/06/14: still not available)
+task coverageWithJacoco080 {
+    dependsOn(test)
+
+    doLast {
+        jacocoVersion = "0.8.0"
+    }
+    finalizedBy("coverage")
+}
+
+// Run jacocoReport with jacoco 0.7.9
+task coverageWithJacoco079 {
+    dependsOn(test)
+
+    doLast {
+        jacocoVersion = "0.7.9"
+    }
+    finalizedBy("coverage")
+}
+
+task coverage(type: JacocoReport)  {
+    outputs.upToDateWhen {
+        false
+    }
+
+    doFirst {
+        println("setting jacoco to $jacocoVersion")
+        jacoco.toolVersion = jacocoVersion
+        reports.html.destination "${buildDir}/jacoco${jacocoVersion}"
+    }
+
+
+    sourceSets sourceSets.main
+    executionData = files(tasks.jacocoTestReport.executionData)
+    reports {
+        html.enabled = true
+    }
 }
 
