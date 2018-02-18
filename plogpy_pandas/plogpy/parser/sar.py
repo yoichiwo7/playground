@@ -1,31 +1,31 @@
 import collections
 
-from plogpy.parser.common import PerfLogParser, ParsedPerfData
+import pandas as pd
+
+from plogpy.parser.common import PerfLogParser
 
 class SarCpuLogParser(PerfLogParser):
     def parse(self, path):
         with open(path) as f:
-            headers = self.__parse_header(f)
-            logdata = self.__parse_data(f, headers)
-            return collections.OrderedDict({"CPU Usage": logdata})
+            cols = self.__parse_header(f)
+            print(cols)
+            df_dict = self.__parse_data(f, cols)
+            return df_dict
 
-    def __parse_data(self, f, headers):
-        logdata = ParsedPerfData()
+    def __parse_data(self, f, cols):
+        dataset_dict = collections.OrderedDict()
         for line in f:
             elems = self.__parse_sar_line(line)
             if len(elems) == 0 or (len(elems) > 1 and elems[1] == "CPU"):
                 continue
             node = elems[1]
-            nums = elems[2:]
-            if node not in logdata.nodes:
-                d = collections.OrderedDict()
-                for hdr in headers:
-                    d[hdr] = []
-                logdata.nodes[node] = d
-            nodeMap = logdata.nodes[node]
-            for h, n in zip(headers, nums):
-                nodeMap[h].append(n)
-        return logdata
+            nums = [float(e) for e in elems[2:]]
+            l = dataset_dict.setdefault(node, [])
+            l.append(nums)
+        df_dict = collections.OrderedDict()
+        for node, dataset in dataset_dict.items():
+            df_dict[node] = pd.DataFrame(dataset, columns=cols)
+        return df_dict
 
 
     def __parse_header(self, f):

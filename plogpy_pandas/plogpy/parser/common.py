@@ -2,6 +2,8 @@ import abc
 import collections
 import re
 
+import pandas as pd
+
 from plogpy.type import LogType
 
 
@@ -12,17 +14,10 @@ from plogpy.type import LogType
 #   - statistics_of_node/dataset = all->usr, all->sys, cpu0->usr, cpu->sys, ..
 #      (ex. max, min, average, mean, std-dev, dev, 0/25/50/75/99percentile)
 
-class ParsedPerfData(object):
-    def __init__(self):
-        self.name = ""
-        self.nodes = collections.OrderedDict()  #TODO: statistics(ex. max, min, average)
-    
-    def __repr__(self):
-        return self.name + ":" + str(self.nodes)
-
 
 class PerfLogParser(abc.ABC):
     @abc.abstractmethod
+    # key=node, value=DataFrame
     def parse(self, path: str) -> collections.OrderedDict:
         pass
 

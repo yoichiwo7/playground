@@ -1,11 +1,19 @@
 #!/usr/bin/python3
 import plogpy
 import pprint
+import pandas as pd
+
+def plot_df(df):
+    ax = df.plot(kind='area', stacked=True, alpha=0.4)
+    fig = ax.get_figure()
+    fig.savefig('zzz.png')
 
 if __name__ == '__main__':
     d = plogpy.parse_log("log_sample/dstat.log")
     for k, v in d.items():
-        print(k,v)
+        print(k)
+        print(v)
+    
 
     d = plogpy.parse_log("log_sample/sar_u.log")
     for k, v in d.items():
@@ -16,10 +24,8 @@ if __name__ == '__main__':
         print(k,v)
 
     d = plogpy.parse_log("log_sample/sar_P_ALL.log")
-    for name, logdata in d.items():
-        for node, dataset in logdata.nodes.items():
-            print(node)
-            print(dataset)
-
-    #TODO: add chart here
-    import pandas as pd
+    for k, v in d.items():
+        print(k)
+        print(v)
+        plot_df(v)
+        break

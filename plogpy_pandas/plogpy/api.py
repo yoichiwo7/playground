@@ -15,8 +15,8 @@ def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> di
         parser = get_matched_parser(input_path)
     else:
         parser = get_parser(log_type)
-    logdata_dict = parser.parse(input_path)
-    return logdata_dict
+    dataframe_dict = parser.parse(input_path)
+    return dataframe_dict
 
 
 def generate_report(input_path: str, output_path: str) -> None:

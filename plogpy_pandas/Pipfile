@@ -7,9 +7,10 @@ name = "pypi"
 
 [packages]
 
-PyFunctional = "*"
+pyfunctional = "*"
 pandas = "*"
-XlsxWriter = "*"
+xlsxwriter = "*"
+matplotlib = "*"
 
 
 [dev-packages]
