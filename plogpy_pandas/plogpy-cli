@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import pprint
 import collections
 
@@ -6,11 +6,46 @@ import pandas as pd
 
 import plogpy
 
-def plot_df(df, name="zzz"):
+def plot_df(df: pd.DataFrame, name="zzz"):
     ax = df.plot(kind='area', stacked=True, alpha=0.4)
     fig = ax.get_figure()
     #NOTE: eps, pdf, pgf, png, ps, raw, rgba, svg, svgz
     fig.savefig(f'images/{name}.pdf')
+
+
+def write_df_to_excel(writer, df: pd.DataFrame, name):
+    ## add DATA
+    sheet_name_data = f'{name}_DATA'
+    df.to_excel(writer, sheet_name_data)
+
+    ## add CHART
+    sheet_name_chart = f'{name}_CHART'
+    wb = writer.book
+    ws = wb.add_worksheet(sheet_name_chart)
+    max_row = len(df)
+    chart_pos = 1
+    CHART_HEIGHT = 18
+    #all
+    for t, subtype in [('area', 'stacked'), ('line', '')]:
+        chart = wb.add_chart({'type': t, 'subtype': subtype})
+        chart.set_legend({'position': 'bottom'})
+        for col_pos, _ in enumerate(df.keys(), 1):
+            chart.add_series({
+                'name':       [sheet_name_data, 0, col_pos],
+                'values':     [sheet_name_data, 1, col_pos, max_row, col_pos],
+            })
+        ws.insert_chart(row=chart_pos, col=1, chart=chart)
+        chart_pos += CHART_HEIGHT
+    #each
+    for col_pos, _ in enumerate(df.keys(), 1):
+        sub_chart = wb.add_chart({'type': 'line'})
+        sub_chart.set_legend({'position': 'bottom'})
+        sub_chart.add_series({
+            'name':       [sheet_name_data, 0, col_pos],
+            'values':     [sheet_name_data, 1, col_pos, max_row, col_pos],
+        })
+        ws.insert_chart(row=chart_pos, col=1, chart=sub_chart)
+        chart_pos += CHART_HEIGHT
 
 
 def get_first_level_headers(df: pd.DataFrame) -> list:
@@ -22,11 +57,15 @@ if __name__ == '__main__':
     for k, v in d.items():
         print(k)
         header1 = get_first_level_headers(v)
+        writer = pd.ExcelWriter("images/XXX.xlsx")
         for hdr in header1:
             df = v[hdr]
             print(f'--- {hdr} ---')
             print(df)
-            plot_df(df, hdr.replace("/", "_"))
+            name = hdr.replace("/", "_").replace(" ", "_")
+            plot_df(df, name)
+            write_df_to_excel(writer, df, name)
+        writer.save()
 
     # d = plogpy.parse_log("log_sample/sar_u.log")
     # for k, v in d.items():
