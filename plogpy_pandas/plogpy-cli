@@ -1,31 +1,44 @@
 #!/usr/bin/python3
-import plogpy
 import pprint
+import collections
+
 import pandas as pd
 
-def plot_df(df):
+import plogpy
+
+def plot_df(df, name="zzz"):
     ax = df.plot(kind='area', stacked=True, alpha=0.4)
     fig = ax.get_figure()
-    fig.savefig('zzz.png')
+    #NOTE: eps, pdf, pgf, png, ps, raw, rgba, svg, svgz
+    fig.savefig(f'images/{name}.pdf')
+
+
+def get_first_level_headers(df: pd.DataFrame) -> list:
+    return list(collections.OrderedDict({h1:h2 for h1, h2 in df.keys()}).keys())
+
 
 if __name__ == '__main__':
     d = plogpy.parse_log("log_sample/dstat.log")
     for k, v in d.items():
         print(k)
-        print(v)
-    
+        header1 = get_first_level_headers(v)
+        for hdr in header1:
+            df = v[hdr]
+            print(f'--- {hdr} ---')
+            print(df)
+            plot_df(df, hdr.replace("/", "_"))
 
-    d = plogpy.parse_log("log_sample/sar_u.log")
-    for k, v in d.items():
-        print(k,v)
+    # d = plogpy.parse_log("log_sample/sar_u.log")
+    # for k, v in d.items():
+    #     print(k,v)
 
-    d = plogpy.parse_log("log_sample/sar_u_ALL.log")
-    for k, v in d.items():
-        print(k,v)
+    # d = plogpy.parse_log("log_sample/sar_u_ALL.log")
+    # for k, v in d.items():
+    #     print(k,v)
 
-    d = plogpy.parse_log("log_sample/sar_P_ALL.log")
-    for k, v in d.items():
-        print(k)
-        print(v)
-        plot_df(v)
-        break
+    # d = plogpy.parse_log("log_sample/sar_P_ALL.log")
+    # for k, v in d.items():
+    #     print(k)
+    #     print(v)
+    #     plot_df(v)
+    #     break

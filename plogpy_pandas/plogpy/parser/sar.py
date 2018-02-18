@@ -19,7 +19,7 @@ class SarCpuLogParser(PerfLogParser):
             if len(elems) == 0 or (len(elems) > 1 and elems[1] == "CPU"):
                 continue
             node = elems[1]
-            nums = [float(e) for e in elems[2:]]
+            nums = [float(e)  for e in elems[2:]]
             l = dataset_dict.setdefault(node, [])
             l.append(nums)
         df_dict = collections.OrderedDict()
