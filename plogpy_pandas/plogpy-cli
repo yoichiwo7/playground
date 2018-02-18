@@ -13,59 +13,122 @@ def plot_df(df: pd.DataFrame, name="zzz"):
     fig.savefig(f'images/{name}.pdf')
 
 
-def write_df_to_excel(writer, df: pd.DataFrame, name):
+def write_df_to_excel(writer, df: pd.DataFrame, name, index=False):
+    FIXED_ROW_POS = 1
+    FIXED_COL_POS = 0
+    #TODO: change start row pos depending on multi/single index cases.
+    parents_leaf_dict = get_parent_leaf_headers(df)
+    max_row = len(df)
+
+    #TODO: adjust column width for DATA/STATS sheets.
+
     ## add DATA
     sheet_name_data = f'{name}_DATA'
-    df.to_excel(writer, sheet_name_data)
+    df.to_excel(writer, sheet_name_data,
+        float_format='%.2f', index=index, freeze_panes=(FIXED_ROW_POS, FIXED_COL_POS))
+
+    ## add STAT
+    df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
+    sheet_name_stats = f'{name}_STATS'
+    df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
 
     ## add CHART
     sheet_name_chart = f'{name}_CHART'
     wb = writer.book
     ws = wb.add_worksheet(sheet_name_chart)
-    max_row = len(df)
     chart_pos = 1
     CHART_HEIGHT = 18
+
     #all
-    for t, subtype in [('area', 'stacked'), ('line', '')]:
-        chart = wb.add_chart({'type': t, 'subtype': subtype})
-        chart.set_legend({'position': 'bottom'})
-        for col_pos, _ in enumerate(df.keys(), 1):
-            chart.add_series({
+    current_col_pos = 0
+    for parents, leafs  in parents_leaf_dict.items():
+        sub_df = df
+        for p in parents:
+            sub_df = df[p]
+        #ALL
+        start_col_pos_of_hdr = current_col_pos
+        for t, subtype in [('area', 'stacked'), ('line', '')]:
+            current_col_pos = start_col_pos_of_hdr
+            chart = wb.add_chart({
+                'type': t, 
+                'subtype': subtype
+            })
+            chart.set_title({
+                'name': f'{"::".join(parents)} - ({t} chart)'
+            })
+            set_nice_chart(chart)
+            for _ in leafs:
+                current_col_pos += 1
+                chart.add_series({
+                    'name':       [sheet_name_data, 1, current_col_pos],
+                    # 2-level multi index -> +2 to row position
+                    'values':     [sheet_name_data, 1+2, current_col_pos, max_row+2, current_col_pos],
+                })
+            ws.insert_chart(row=chart_pos, col=1, chart=chart)
+            chart_pos += CHART_HEIGHT
+        #EACH
+        #TODO: make it work!!!
+        for col_pos, leaf in enumerate(leafs, 1):
+            sub_chart = wb.add_chart({'type': 'line'})
+            sub_chart.set_title({
+                'name': f'{"::".join(parents)} - ({leaf})'
+            })
+            set_nice_chart(sub_chart)
+            sub_chart.add_series({
                 'name':       [sheet_name_data, 0, col_pos],
                 'values':     [sheet_name_data, 1, col_pos, max_row, col_pos],
             })
-        ws.insert_chart(row=chart_pos, col=1, chart=chart)
-        chart_pos += CHART_HEIGHT
-    #each
-    for col_pos, _ in enumerate(df.keys(), 1):
-        sub_chart = wb.add_chart({'type': 'line'})
-        sub_chart.set_legend({'position': 'bottom'})
-        sub_chart.add_series({
-            'name':       [sheet_name_data, 0, col_pos],
-            'values':     [sheet_name_data, 1, col_pos, max_row, col_pos],
-        })
-        ws.insert_chart(row=chart_pos, col=1, chart=sub_chart)
-        chart_pos += CHART_HEIGHT
+            ws.insert_chart(row=chart_pos, col=1, chart=sub_chart)
+            chart_pos += CHART_HEIGHT
 
 
-def get_first_level_headers(df: pd.DataFrame) -> list:
-    return list(collections.OrderedDict({h1:h2 for h1, h2 in df.keys()}).keys())
+def set_nice_chart(chart):
+    chart.set_size({
+        'x_scale': 1.5, 
+        'y_scale': 1.2
+    })
+    chart.set_chartarea({
+        'border': {'color': 'black'}
+    })
+    #chart.set_style(10)  #nice ids: 10,34*,50  (2+8x)
+    chart.set_legend({
+        'position': 'bottom'
+    })
+
+
+def get_parent_leaf_headers(df: pd.DataFrame) -> list:
+    #TODO: get leaf headers and parents -> {("cpu usage") : ["usr", "sys", ...]}
+    collected_headers = collections.OrderedDict() #TODO: Ordered dict
+    is_multi = isinstance(df.keys(), pd.core.indexes.multi.MultiIndex)
+    if not is_multi:
+        # Single level
+        for hdr in df.keys():
+            leaf = hdr
+            v = collected_headers.setdefault((), [])
+            v.append(leaf)
+        return collected_headers
+    else:
+        # Multi level
+        for hdrs in df.keys():
+            parents = hdrs[0:-1]
+            leaf = hdrs[-1]
+            v = collected_headers.setdefault(parents, [])
+            v.append(leaf)
+        return collected_headers
 
 
 if __name__ == '__main__':
-    d = plogpy.parse_log("log_sample/dstat.log")
+    d = plogpy.parse_log("log_sample/dstat2.log")
+    df = None
+    ## each dstat section
     for k, v in d.items():
-        print(k)
-        header1 = get_first_level_headers(v)
-        writer = pd.ExcelWriter("images/XXX.xlsx")
-        for hdr in header1:
-            df = v[hdr]
-            print(f'--- {hdr} ---')
-            print(df)
-            name = hdr.replace("/", "_").replace(" ", "_")
-            plot_df(df, name)
-            write_df_to_excel(writer, df, name)
-        writer.save()
+        if df == None:
+            df = v
+    ## all dstat 
+    print(get_parent_leaf_headers(df))
+    writer = pd.ExcelWriter("images/YYY.xlsx")
+    write_df_to_excel(writer, df, "dstat_all", index=True)
+    writer.save()
 
     # d = plogpy.parse_log("log_sample/sar_u.log")
     # for k, v in d.items():
