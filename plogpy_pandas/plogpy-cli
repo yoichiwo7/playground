@@ -13,19 +13,29 @@ def plot_df(df: pd.DataFrame, name="zzz"):
     fig.savefig(f'images/{name}.pdf')
 
 
-def write_df_to_excel(writer, df: pd.DataFrame, name, index=False):
-    FIXED_ROW_POS = 1
+def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=False):
+    """
+    Write data, statistics, and charts of specifed DataFrame.
+
+    writer : writer object of xlsxwriter
+    df : input pd.DataFrame
+    chart_each : add chart for each series (ex. usr, sys, wait)
+    """
     FIXED_COL_POS = 0
-    #TODO: change start row pos depending on multi/single index cases.
     parents_leaf_dict = get_parent_leaf_headers(df)
+    parents_num = max([len(parents) for parents in parents_leaf_dict.keys()])
+    row_offset = 1
+    if parents_num > 0:
+        row_offset += parents_num
+        row_offset += 1 # a blank row will be added at multi-index
     max_row = len(df)
 
-    #TODO: adjust column width for DATA/STATS sheets.
 
+    #TODO: adjust column width for DATA/STATS sheets.
     ## add DATA
     sheet_name_data = f'{name}_DATA'
     df.to_excel(writer, sheet_name_data,
-        float_format='%.2f', index=index, freeze_panes=(FIXED_ROW_POS, FIXED_COL_POS))
+        float_format='%.2f', index=index, freeze_panes=(row_offset, FIXED_COL_POS))
 
     ## add STAT
     df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
@@ -42,47 +52,52 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=False):
     #all
     current_col_pos = 0
     for parents, leafs  in parents_leaf_dict.items():
+        #TODO: Don't need sub_df. (because charts always refer to the DATA sheet)
         sub_df = df
         for p in parents:
             sub_df = df[p]
         #ALL
         start_col_pos_of_hdr = current_col_pos
-        for t, subtype in [('area', 'stacked'), ('line', '')]:
+        for t, subtype in [('area', 'stacked'), ('line', 'unstacked')]:
             current_col_pos = start_col_pos_of_hdr
             chart = wb.add_chart({
                 'type': t, 
                 'subtype': subtype
             })
+            if len(parents) == 0:
+                parents = (name,)
             chart.set_title({
-                'name': f'{"::".join(parents)} - ({t} chart)'
+                'name': f'{"::".join(parents)} - {subtype.capitalize()}'
             })
             set_nice_chart(chart)
             for _ in leafs:
                 current_col_pos += 1
                 chart.add_series({
-                    'name':       [sheet_name_data, 1, current_col_pos],
+                    'name':       [sheet_name_data, parents_num, current_col_pos],
                     # 2-level multi index -> +2 to row position
-                    'values':     [sheet_name_data, 1+2, current_col_pos, max_row+2, current_col_pos],
+                    'values':     [sheet_name_data, row_offset, current_col_pos, max_row+row_offset, current_col_pos],
                 })
             ws.insert_chart(row=chart_pos, col=1, chart=chart)
             chart_pos += CHART_HEIGHT
         #EACH
-        #TODO: make it work!!!
+        if not chart_each:
+            continue
         for col_pos, leaf in enumerate(leafs, 1):
             sub_chart = wb.add_chart({'type': 'line'})
             sub_chart.set_title({
-                'name': f'{"::".join(parents)} - ({leaf})'
+                'name': f'{"::".join(parents)} [{leaf}]'
             })
-            set_nice_chart(sub_chart)
+            set_nice_chart(sub_chart, style_id=43)  #42:dark layout
             sub_chart.add_series({
-                'name':       [sheet_name_data, 0, col_pos],
-                'values':     [sheet_name_data, 1, col_pos, max_row, col_pos],
+                'name':       [sheet_name_data, parents_num, col_pos],
+                'values':     [sheet_name_data, row_offset, col_pos, max_row+row_offset, col_pos],
             })
             ws.insert_chart(row=chart_pos, col=1, chart=sub_chart)
             chart_pos += CHART_HEIGHT
 
 
-def set_nice_chart(chart):
+def set_nice_chart(chart, style_id=2):
+    chart.set_style(style_id)  #nice ids: 10,34*,50  (2+8x)
     chart.set_size({
         'x_scale': 1.5, 
         'y_scale': 1.2
@@ -90,7 +105,6 @@ def set_nice_chart(chart):
     chart.set_chartarea({
         'border': {'color': 'black'}
     })
-    #chart.set_style(10)  #nice ids: 10,34*,50  (2+8x)
     chart.set_legend({
         'position': 'bottom'
     })
@@ -118,29 +132,33 @@ def get_parent_leaf_headers(df: pd.DataFrame) -> list:
 
 
 if __name__ == '__main__':
-    d = plogpy.parse_log("log_sample/dstat2.log")
+    d = plogpy.parse_log("log_sample/dstat.log")
     df = None
     ## each dstat section
     for k, v in d.items():
         if df == None:
             df = v
     ## all dstat 
-    print(get_parent_leaf_headers(df))
     writer = pd.ExcelWriter("images/YYY.xlsx")
-    write_df_to_excel(writer, df, "dstat_all", index=True)
+    write_df_to_excel(writer, df, "dstat_all", index=True, chart_each=True)
     writer.save()
 
     # d = plogpy.parse_log("log_sample/sar_u.log")
     # for k, v in d.items():
     #     print(k,v)
 
-    # d = plogpy.parse_log("log_sample/sar_u_ALL.log")
-    # for k, v in d.items():
-    #     print(k,v)
+    d = plogpy.parse_log("log_sample/sar_u_ALL.log")
+    df = None
+    for k, v in d.items():
+        if df == None:
+            df = v
+    writer = pd.ExcelWriter("images/ZZZ.xlsx")
+    write_df_to_excel(writer, df, "sar_u_ALL", index=True)
+    writer.save()
 
-    # d = plogpy.parse_log("log_sample/sar_P_ALL.log")
-    # for k, v in d.items():
-    #     print(k)
-    #     print(v)
-    #     plot_df(v)
-    #     break
+    d = plogpy.parse_log("log_sample/sar_P_ALL.log")
+    df = None
+    writer = pd.ExcelWriter("images/XXX.xlsx")
+    for k, v in d.items():
+        write_df_to_excel(writer, v, f"sar_u_P_ALL_{k}", index=True)
+    writer.save()
