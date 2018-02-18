@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+import plogpy
+import pprint
+
+if __name__ == '__main__':
+    d = plogpy.parse_log("log_sample/dstat.log")
+    for k, v in d.items():
+        print(k,v)
+
+    d = plogpy.parse_log("log_sample/sar_u.log")
+    for k, v in d.items():
+        print(k,v)
+
+    d = plogpy.parse_log("log_sample/sar_u_ALL.log")
+    for k, v in d.items():
+        print(k,v)
+
+    d = plogpy.parse_log("log_sample/sar_P_ALL.log")
+    for name, logdata in d.items():
+        for node, dataset in logdata.nodes.items():
+            print(node)
+            print(dataset)
+
+    #TODO: add chart here
+    import pandas as pd
