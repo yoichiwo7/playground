@@ -9,8 +9,8 @@ class DstatLogParser(PerfLogParser):
     def parse(self, path):
         with open(path) as f:
             multi_level_cols = self.__parse_headers(f)
-            df_dict = self.__parse_data(f, multi_level_cols)
-        return df_dict
+            df = self.__parse_data(f, multi_level_cols)
+        return df
 
     def __parse_data(self, f, multi_level_cols) -> collections.OrderedDict:
         # return dict: key=str('system'), value=pd.DataFrame
@@ -21,15 +21,18 @@ class DstatLogParser(PerfLogParser):
             nums = [float(e) for e in elems]
             if len(nums) != len(multi_level_cols): raise Exception("Bad CSV line: " + line)
             rows.append(nums)
+        
         df = pd.DataFrame(rows, columns=multi_index)
-        df_dict = collections.OrderedDict()
-        df_dict['system'] = df
-        return df_dict
+        
+        return df
 
-    def __parse_headers(self, f) -> pd.MultiIndex:
+    def __parse_headers(self, f) -> list:
+        """
+        Returns tuple list.
+        ex. [("cpu", "usr"), ("cpu", "sys"), ("mem", "used"), ("mem", "free")]
+        """
         FIRST_HEADER_POS = 6
         SECOND_HEADER_POS = 7
-        
         for i, line in enumerate(f, 1):
             if i == FIRST_HEADER_POS:
                 headers = split_csv_line(line)
@@ -37,7 +40,7 @@ class DstatLogParser(PerfLogParser):
             elif i == SECOND_HEADER_POS:
                 sub_headers = split_csv_line(line)
                 break
-
+        #TODO:check time (-t / -T)
         multi_level_cols = []
         for hdr, sub_hdr in zip(headers, sub_headers):
             if len(hdr) > 0:

@@ -8,11 +8,11 @@ class SarCpuLogParser(PerfLogParser):
     def parse(self, path):
         with open(path) as f:
             cols = self.__parse_header(f)
-            print(cols)
-            df_dict = self.__parse_data(f, cols)
-            return df_dict
+            df= self.__parse_data(f, cols)
+            return df
 
     def __parse_data(self, f, cols):
+        #TODO: return multi-level-cols-df instead of dictionary
         dataset_dict = collections.OrderedDict()
         for line in f:
             elems = self.__parse_sar_line(line)

@@ -18,7 +18,7 @@ from plogpy.type import LogType
 class PerfLogParser(abc.ABC):
     @abc.abstractmethod
     # key=node, value=DataFrame
-    def parse(self, path: str) -> collections.OrderedDict:
+    def parse(self, path: str) -> pd.DataFrame:
         pass
 
 
