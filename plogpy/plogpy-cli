@@ -2,9 +2,64 @@
 import pprint
 import collections
 
+import click
 import pandas as pd
 
 import plogpy
 
-if __name__ == '__main__':
+
+@click.group()
+def plogpy_cmd():
+    """
+    CLI tool for generating excel/csv/json from performance log.
+    """
+    pass
+
+
+@plogpy_cmd.command()
+def tryit():
+    """
+    Generate excel file from sample log files.
+    """
     plogpy.generate_excel_report("log_sample/dstat.log", "dstat.xlsx")
+
+
+#TODO: option, implmentation
+#TODO: make argument to file type
+@plogpy_cmd.command()
+@click.argument("in_file")
+@click.argument("out_file")
+def excel(in_file, out_file):
+    """
+    Generate excel file.
+    Statistics and charts can be added by option.
+    """
+    pass
+
+
+#TODO: option, implmentation
+@plogpy_cmd.command()
+@click.argument("in_file")
+def csv(in_file):
+    """
+    Output CSV string.
+    """
+    pass
+
+
+#TODO: option, implmentation
+@plogpy_cmd.command()
+@click.argument("in_file")
+def json(in_file):
+    """
+    Output JSON string.
+    """
+    pass
+
+
+def main():
+    plogpy_cmd()
+
+
+if __name__ == '__main__':
+    main()
