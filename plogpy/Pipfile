@@ -11,11 +11,13 @@ pyfunctional = "*"
 pandas = "*"
 xlsxwriter = "*"
 matplotlib = "*"
+click = "*"
 
 
 [dev-packages]
 
 pytest = "*"
+pylint = "*"
 
 
 [requires]
