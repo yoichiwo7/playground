@@ -4,7 +4,12 @@ from .util import get_parent_leaf_headers
 
 #TOOD: maybe turn it to class?
 
-def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=False) -> None:
+def write_df_to_excel(writer, df: pd.DataFrame, name, index=True,
+        enable_data_sheet=True,
+        enable_stats_sheet=True,
+        enable_chart_sheet=True,
+        chart_each=False,
+        use_png=False) -> None:
     """
     Write data, statistics, and charts of specifed DataFrame.
 
@@ -12,6 +17,9 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
     df : input pd.DataFrame
     chart_each : add chart for each series (ex. usr, sys, wait)
     """
+
+    #TODO: add use_png support
+
     FIXED_COL_POS = 0
     parents_leaf_dict = get_parent_leaf_headers(df)
     parents_num = max([len(parents) for parents in parents_leaf_dict.keys()])
@@ -23,18 +31,21 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
 
     #TODO: adjust column width for DATA/STATS sheets.
     ## add DATA
-    sheet_name_data = f'{name}_DATA'
-    df.to_excel(writer, sheet_name_data,
-        float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
+    if enable_data_sheet:
+        sheet_name_data = f'{name}_DATA'
+        df.to_excel(writer, sheet_name_data,
+            float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
 
     ## add STAT
-    df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
-    sheet_name_stats = f'{name}_STATS'
-    df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
+    if enable_stats_sheet:
+        df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
+        sheet_name_stats = f'{name}_STATS'
+        df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
 
     ## add CHART
-    __add_chart_sheet(writer, parents_leaf_dict, sheet_name_data, name,
-        parents_num, row_start_pos, row_end_pos, chart_each=chart_each)
+    if enable_chart_sheet:
+        __add_chart_sheet(writer, parents_leaf_dict, sheet_name_data, name,
+            parents_num, row_start_pos, row_end_pos, chart_each=chart_each)
 
 
 def __add_chart_sheet(writer, parents_leaf_dict, sheet_name_data, name, parents_num, row_start_pos, row_end_pos, chart_each=False):

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import pprint
 import collections
+import csv as csv_mod
+import pprint
+import sys
 
 import click
 import pandas as pd
@@ -21,40 +23,59 @@ def tryit():
     """
     Generate excel file from sample log files.
     """
+    #TODO: target all log_sample files
     plogpy.generate_excel_report("log_sample/dstat.log", "dstat.xlsx")
 
 
-#TODO: option, implmentation
-#TODO: make argument to file type
+#TODO: option
 @plogpy_cmd.command()
-@click.argument("in_file")
-@click.argument("out_file")
-def excel(in_file, out_file):
+@click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("out_file", type=click.Path(exists=True, dir_okay=False))
+@click.option('--data/--no-data', default=True, help="Add data sheet. (default: --data)")
+@click.option('--stats/--no-stats', default=True, help="Add statistics sheet. (default: --stats)")
+@click.option('--chart/--no-chart', default=True, help="Add Chart sheet. (default: --chart)")
+@click.option('--png', is_flag=True, help="Turn excel chart to png images.")
+@click.option('--each', is_flag=True, help="Add more charts for each series.")
+def excel(in_file, out_file, data, stats, chart, png, each):
     """
     Generate excel file.
     Statistics and charts can be added by option.
     """
-    pass
+
+    #TODO: add resample options. num=5, type=max/average/etc...
+
+    plogpy.generate_excel_report(in_file, out_file,
+        enable_data_sheet=data,
+        enable_stats_sheet=stats,
+        enable_chart_sheet=chart,
+        use_png=png,
+        each_chart=each)
 
 
-#TODO: option, implmentation
 @plogpy_cmd.command()
-@click.argument("in_file")
-def csv(in_file):
+@click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
+@click.option('--stats', is_flag=True, help="Output statistics CSV string.")
+def csv(in_file, stats):
     """
     Output CSV string.
     """
-    pass
+    df = plogpy.parse_log(in_file)
+    if stats:
+        df = df.describe()
+    df.to_csv(path_or_buf=sys.stdout, quoting=csv_mod.QUOTE_NONNUMERIC)
 
 
-#TODO: option, implmentation
 @plogpy_cmd.command()
-@click.argument("in_file")
-def json(in_file):
+@click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
+@click.option('--stats', is_flag=True, help="Output statistics JSON string.")
+def json(in_file, stats):
     """
     Output JSON string.
     """
-    pass
+    df = plogpy.parse_log(in_file)
+    if stats:
+        df = df.describe()
+    df.to_json(path_or_buf=sys.stdout)
 
 
 def main():
