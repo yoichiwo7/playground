@@ -2,6 +2,8 @@ import pandas as pd
 
 from .util import get_parent_leaf_headers
 
+#TOOD: maybe turn it to class?
+
 def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=False) -> None:
     """
     Write data, statistics, and charts of specifed DataFrame.
@@ -13,17 +15,17 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
     FIXED_COL_POS = 0
     parents_leaf_dict = get_parent_leaf_headers(df)
     parents_num = max([len(parents) for parents in parents_leaf_dict.keys()])
-    row_offset = 1
+    row_start_pos = 1
     if parents_num > 0:
-        row_offset += parents_num
-        row_offset += 1 # a blank row will be added at multi-index
-    max_row = len(df)
+        row_start_pos += parents_num
+        row_start_pos += 1 # a blank row will be added at multi-index
+    row_end_pos = row_start_pos + len(df)
 
     #TODO: adjust column width for DATA/STATS sheets.
     ## add DATA
     sheet_name_data = f'{name}_DATA'
     df.to_excel(writer, sheet_name_data,
-        float_format='%.2f', index=index, freeze_panes=(row_offset, FIXED_COL_POS))
+        float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
 
     ## add STAT
     df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
@@ -31,6 +33,11 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
     df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
 
     ## add CHART
+    __add_chart_sheet(writer, parents_leaf_dict, sheet_name_data, name,
+        parents_num, row_start_pos, row_end_pos, chart_each=chart_each)
+
+
+def __add_chart_sheet(writer, parents_leaf_dict, sheet_name_data, name, parents_num, row_start_pos, row_end_pos, chart_each=False):
     sheet_name_chart = f'{name}_CHART'
     wb = writer.book
     ws = wb.add_worksheet(sheet_name_chart)
@@ -40,10 +47,9 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
     #all
     current_col_pos = 0
     for parents, leafs  in parents_leaf_dict.items():
-        #TODO: Don't need sub_df. (because charts always refer to the DATA sheet)
-        sub_df = df
-        for p in parents:
-            sub_df = df[p]
+        # sub_df = df
+        # for p in parents:
+        #     sub_df = df[p]
         #ALL
         start_col_pos_of_hdr = current_col_pos
         for t, subtype in [('area', 'stacked'), ('line', 'unstacked')]:
@@ -64,7 +70,7 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
                     'name':       [sheet_name_data, parents_num, current_col_pos],
                     # 2-level multi index -> +2 to row position
                     # range is inclusive (need te decrement)
-                    'values':     [sheet_name_data, row_offset, current_col_pos, max_row+row_offset-1, current_col_pos],
+                    'values':     [sheet_name_data, row_start_pos, current_col_pos, row_end_pos-1, current_col_pos],
                 })
             ws.insert_chart(row=chart_pos, col=1, chart=chart)
             chart_pos += CHART_HEIGHT
@@ -79,7 +85,7 @@ def write_df_to_excel(writer, df: pd.DataFrame, name, index=True, chart_each=Fal
             __set_nice_chart(sub_chart, style_id=43)  #42:dark layout
             sub_chart.add_series({
                 'name':       [sheet_name_data, parents_num, col_pos],
-                'values':     [sheet_name_data, row_offset, col_pos, max_row+row_offset-1, col_pos],
+                'values':     [sheet_name_data, row_start_pos, col_pos, row_end_pos-1, col_pos],
             })
             ws.insert_chart(row=chart_pos, col=1, chart=sub_chart)
             chart_pos += CHART_HEIGHT
