@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import collections
 import csv as csv_mod
-import pprint
+import glob
+import os
 import sys
 
 import click
@@ -23,14 +24,28 @@ def tryit():
     """
     Generate excel file from sample log files.
     """
-    #TODO: target all log_sample files
-    plogpy.generate_excel_report("log_sample/dstat.log", "dstat.xlsx")
+    log_dir = "log_sample"
+    report_dir = "report_sample"
+    logs = glob.glob(f"{log_dir}/*")
+    reports = []
+
+    if not os.path.exists(report_dir):
+        os.mkdir(report_dir)
+
+    for path in logs:
+        headpath, ext = os.path.splitext(path)
+        headpath = headpath.replace(log_dir, report_dir)
+        ext = ".xlsx"
+        reports.append(headpath + ext)
+    
+    for log, report in zip(logs, reports):
+        plogpy.generate_excel_report(log, report)
 
 
 #TODO: option
 @plogpy_cmd.command()
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
-@click.argument("out_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("out_file", type=click.Path(exists=False, dir_okay=False))
 @click.option('--data/--no-data', default=True, help="Add data sheet. (default: --data)")
 @click.option('--stats/--no-stats', default=True, help="Add statistics sheet. (default: --stats)")
 @click.option('--chart/--no-chart', default=True, help="Add Chart sheet. (default: --chart)")
@@ -76,6 +91,19 @@ def json(in_file, stats):
     if stats:
         df = df.describe()
     df.to_json(path_or_buf=sys.stdout)
+
+
+
+@plogpy_cmd.command()
+@click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
+@click.argument("out_dir", type=click.Path(exists=True, dir_okay=True, file_okay=False))
+@click.option('--format', default="png", help="Generate PNG image. (Default)")
+def image(in_file, out_dir, format):
+    """
+    Generate image files.
+    """
+    # TODO:
+    #plogpy.generate_images(in_file)
 
 
 def main():

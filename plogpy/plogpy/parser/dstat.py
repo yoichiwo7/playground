@@ -6,6 +6,14 @@ from plogpy.parser.common import PerfLogParser
 from plogpy.util import split_csv_line
 
 class DstatLogParser(PerfLogParser):
+
+    @staticmethod
+    def regiter_info():
+        return ("dstat", 
+            [
+                r'Dstat \d+\.\d+.\d+ CSV output'
+            ])
+
     def parse(self, path):
         with open(path) as f:
             multi_level_cols = self.__parse_headers(f)

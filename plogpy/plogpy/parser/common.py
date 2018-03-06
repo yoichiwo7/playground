@@ -7,30 +7,41 @@ import pandas as pd
 from plogpy.type import LogType
 
 
-# chart
-#   - name = "CPU Usage"
-#   - nodes = all, cpu0, cpu1
-#   - dataset_per_node = {"usr": [...], "sys": [...]}
-#   - statistics_of_node/dataset = all->usr, all->sys, cpu0->usr, cpu->sys, ..
-#      (ex. max, min, average, mean, std-dev, dev, 0/25/50/75/99percentile)
-
-
 class PerfLogParser(abc.ABC):
+    @staticmethod
     @abc.abstractmethod
-    # key=node, value=DataFrame
+    def regiter_info() -> tuple:
+        """
+        (unique_log_type, [regex, ...])
+        """
+        pass
+
+    @abc.abstractmethod
     def parse(self, path: str) -> pd.DataFrame:
         pass
 
 
+#TODO: load parser dymanically (pkgutil.walk_packages)
 from plogpy.parser.dstat import DstatLogParser
-from plogpy.parser.sar import SarCpuLogParser
+from plogpy.parser.sar import SarLogParser
 
-# key=log_type, value=(pattern, parser)
-LOG_PARSER_DICT = {
-    LogType.DSTAT: (r'Dstat \d+\.\d+.\d+ CSV output', DstatLogParser()),
-    LogType.SAR_CPU: (r'CPU\s+\%user\s+\%nice\s+\%system\s+\%iowait\s+\%steal\s+\%idle', SarCpuLogParser()),
-    LogType.SAR_CPU_ALL: (r'CPU\s+\%usr\s+\%nice\s+\%sys\s+', SarCpuLogParser()),
-}
+#key=id, value=([regex,...], parser)
+LOG_PARSER_DICT = {}
+regexes_set = set()
+def __init_log_parsers():
+    for cls in [DstatLogParser, SarLogParser]:
+        log_type, regexes = cls.regiter_info()
+        # Check duplication
+        if log_type in LOG_PARSER_DICT:
+            raise Exception(f"Log type '{log_type}' already exists.")
+        # Add log a parser entry
+        LOG_PARSER_DICT[log_type] = (regexes, cls())
+        for regex in regexes:
+            for t, rs in LOG_PARSER_DICT.items():
+                if regex in rs:
+                    raise Exception(f"Duplicated '{regex}'. Log type=({log_type}, {t})")
+            regexes_set.add(regex)
+
 
 def get_matched_parser(target_file: str) -> PerfLogParser:
     log_type = __detect_log_type(target_file)
@@ -42,9 +53,10 @@ def __detect_log_type(target_file: str, scan_line_num: int = 5) -> LogType:
         for i, line in enumerate(f):
             if i == scan_line_num:
                 break
-            for log_type, (pattern, _) in LOG_PARSER_DICT.items():
-                if re.search(pattern, line):
-                    return log_type
+            for log_type, (patterns, _) in LOG_PARSER_DICT.items():
+                for pattern in patterns:
+                    if re.search(pattern, line):
+                        return log_type
     raise Exception("No matched type found:" + target_file)
 
 
@@ -53,3 +65,6 @@ def get_parser(log_type: LogType) -> PerfLogParser:
         _, parser = LOG_PARSER_DICT.get(log_type)
         return parser
     raise Exception("Undefined log type:" + str(log_type))
+
+
+__init_log_parsers()
