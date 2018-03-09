@@ -4,16 +4,85 @@ import pandas as pd
 
 from plogpy.parser.common import PerfLogParser
 
-class SarLogParser(PerfLogParser):
 
+#TODO: make it private someway
+def add_group_column(df: pd.DataFrame, tuples):
+    ifaces = set([iface for iface, _ in df.columns.tolist()])
+    multi_cols_with_ifaces = []
+    for iface in ifaces:
+        for group, col in tuples:
+            multi_cols_with_ifaces.append( (iface, group, col))
+    df.columns = pd.MultiIndex.from_tuples(multi_cols_with_ifaces)
+    return df
+
+
+class SarEdevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar", 
+        return ("sar_edev", 
+            [
+                r'IFACE\s+rxerr/s\s+txerr/s\s+coll/s\s'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+
+        multi_cols = [
+            ("Error", "rxerr/s"),
+            ("Error", "txerr/s"),
+            ("Collision", "coll/s"),
+            ("Drop", "rxdrop/s"),
+            ("Drop", "txdrop/s"),
+            ("Carr", "txcarr/s"),
+            ("Fram", "rxfram/s"),
+            ("FIFO", "rxfifo/s"),
+            ("FIFO", "txfifo/s"),
+        ]
+        return add_group_column(df, multi_cols)
+
+
+class SarDevLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar_dev", 
+            [
+                r'IFACE\s+rxpck/s\s+txpck/s\s+rxkB/s\s+txkB/s'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+
+        multi_cols = [
+            ("Packet", "rxpck/s"),
+            ("Packet", "txpck/s"),
+            ("Byte", "rxB/s"),
+            ("Byte", "txB/s"),
+            ("Compress", "rxcmp/s"),
+            ("Compress", "txcmp/s"),
+            ("Multicast", "rxmcst/s"),
+            ("Usage", "%ifutil")
+        ]
+        return add_group_column(df, multi_cols)
+
+
+class SarCpuLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar_cpu", 
             [
                 r'CPU\s+\%user\s+\%nice\s+\%system\s+\%iowait\s+\%steal\s+\%idle',
                 r'CPU\s+\%usr\s+\%nice\s+\%sys\s+'
             ])
 
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        return df
+
+
+class SarLogParser():
     def parse(self, path):
         with open(path) as f:
             node_type, cols = self.__parse_header(f)

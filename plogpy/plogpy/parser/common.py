@@ -23,13 +23,15 @@ class PerfLogParser(abc.ABC):
 
 #TODO: load parser dymanically (pkgutil.walk_packages)
 from plogpy.parser.dstat import DstatLogParser
-from plogpy.parser.sar import SarLogParser
+from plogpy.parser.sar import SarCpuLogParser
+from plogpy.parser.sar import SarDevLogParser
+from plogpy.parser.sar import SarEdevLogParser
 
 #key=id, value=([regex,...], parser)
 LOG_PARSER_DICT = {}
 regexes_set = set()
 def __init_log_parsers():
-    for cls in [DstatLogParser, SarLogParser]:
+    for cls in [DstatLogParser, SarCpuLogParser, SarDevLogParser, SarEdevLogParser]:
         log_type, regexes = cls.regiter_info()
         # Check duplication
         if log_type in LOG_PARSER_DICT:
