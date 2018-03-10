@@ -5,6 +5,33 @@ import pandas as pd
 from plogpy.parser.common import PerfLogParser
 
 
+class SarRamLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar_ram", 
+            [
+                r'kbmemfree\s+kbavail\s+kbmemused\s+%memused\s+kbbuffers\s+kbcached\s+kbcommit\s+%commit\s+kbactive\s+kbinact\s+kbdirty'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        multi_cols = [
+            ("Memory(KB)", "kbmemfree"),
+            ("Memory(KB)", "kbavail"),
+            ("Memory(KB)", "kbmemused"),
+            ("Memory(%)", "%memused"),
+            ("Buff/Cache(KB)", "kbbuffers"),
+            ("Buff/Cache(KB)", "kbcached"),
+            ("Commit(KB)", "kbcommit"),
+            ("Commit(%)", "%commit"),
+            ("Active(KB)", "kbactive"),
+            ("Active(KB)", "kbinact"),
+            ("Dirty(KB)", "kbdirty"),
+        ]
+        return add_group_column(df, multi_cols)
+
+
 class SarEtcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
