@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from .parser.common import get_matched_parser, get_parser
+from .parser.common import get_matched_parser, get_parser, get_supported_list
 from .type import LogType
 from .writer import write_df_to_excel
 
@@ -10,6 +10,10 @@ from .writer import write_df_to_excel
 """
 Public APIs for plogpy
 """
+
+def get_supported_log_types() -> list:
+    return get_supported_list()
+
 
 def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> dict:
     """

@@ -57,6 +57,10 @@ def get_matched_parser(target_file: str) -> PerfLogParser:
     return get_parser(log_type)
 
 
+def get_supported_list() -> list:
+    return sorted(LOG_PARSER_DICT.keys())
+
+
 def __detect_log_type(target_file: str, scan_line_num: int = 5) -> LogType:
     with open(target_file) as f:
         for i, line in enumerate(f):

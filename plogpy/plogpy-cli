@@ -67,6 +67,18 @@ def excel(in_file, out_file, data, stats, chart, png, each):
         each_chart=each)
 
 
+# TODO: maybe also show matching log pattern?
+@plogpy_cmd.command("list")
+def supported_list():
+    """
+    List supported all log types.
+    """
+    supported_logs = plogpy.get_supported_log_types()
+    print("Supported log types:")
+    for log in supported_logs:
+        print(f"  - {log}")
+
+
 @plogpy_cmd.command()
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
 @click.option('--stats', is_flag=True, help="Output statistics CSV string.")
