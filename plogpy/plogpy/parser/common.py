@@ -26,12 +26,18 @@ from plogpy.parser.dstat import DstatLogParser
 from plogpy.parser.sar import SarCpuLogParser
 from plogpy.parser.sar import SarDevLogParser
 from plogpy.parser.sar import SarEdevLogParser
+from plogpy.parser.sar import SarTcpLogParser
+from plogpy.parser.sar import SarEtcpLogParser
+
+PARSER_CLASSES = [
+    DstatLogParser, SarCpuLogParser, SarDevLogParser, SarEdevLogParser, SarTcpLogParser, SarEtcpLogParser
+]
 
 #key=id, value=([regex,...], parser)
 LOG_PARSER_DICT = {}
 regexes_set = set()
 def __init_log_parsers():
-    for cls in [DstatLogParser, SarCpuLogParser, SarDevLogParser, SarEdevLogParser]:
+    for cls in PARSER_CLASSES:
         log_type, regexes = cls.regiter_info()
         # Check duplication
         if log_type in LOG_PARSER_DICT:

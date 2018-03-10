@@ -5,6 +5,41 @@ import pandas as pd
 from plogpy.parser.common import PerfLogParser
 
 
+class SarEtcpLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar_etcp", 
+            [
+                r'atmptf/s\s+estres/s\s+retrans/s\s+isegerr/s\s+orsts/s'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        return df
+
+
+class SarTcpLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar_tcp", 
+            [
+                r'active/s\s+passive/s\s+iseg/s\s+oseg/s\s+'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+
+        multi_cols = [
+            ("AcPs", "active/s"),
+            ("AcPs", "passive/s"),
+            ("Segment", "iseg/s"),
+            ("Segment", "oseg/s")
+        ]
+        return add_group_column(df, multi_cols)
+
+
 #TODO: make it private someway
 def add_group_column(df: pd.DataFrame, tuples):
     ifaces = set([iface for iface, _ in df.columns.tolist()])
@@ -83,6 +118,10 @@ class SarCpuLogParser(PerfLogParser):
 
 
 class SarLogParser():
+    """
+    Common sar parser class.
+    Used by other sar sub-commands.
+    """
     def parse(self, path):
         with open(path) as f:
             node_type, cols = self.__parse_header(f)
@@ -95,9 +134,9 @@ class SarLogParser():
         for line in f:
             elems = self.__parse_sar_line(line)
             if len(elems) == 0 or (len(elems) > 1 and elems[1] == node_type):
-                #TODO: ignore AVG:
                 continue
-            print(elems, node_type)
+            if elems[0].endswith(":"):
+                continue
             if node_type:
                 node = elems[1]
                 pos = 2
