@@ -29,9 +29,14 @@ from plogpy.parser.sar import SarEdevLogParser
 from plogpy.parser.sar import SarTcpLogParser
 from plogpy.parser.sar import SarEtcpLogParser
 from plogpy.parser.sar import SarRamLogParser
+from plogpy.parser.sar import SarBlockLogParser
+from plogpy.parser.sar import SarSwapLogParser
+from plogpy.parser.sar import SarSysLogParser
 
 PARSER_CLASSES = [
-    DstatLogParser, SarCpuLogParser, SarDevLogParser, SarEdevLogParser, SarTcpLogParser, SarEtcpLogParser, SarRamLogParser
+    DstatLogParser, SarCpuLogParser, SarDevLogParser, SarEdevLogParser, 
+    SarTcpLogParser, SarEtcpLogParser, SarRamLogParser, SarBlockLogParser, SarSwapLogParser,
+    SarSysLogParser
 ]
 
 #key=id, value=([regex,...], parser)

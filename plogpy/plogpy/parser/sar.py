@@ -4,11 +4,73 @@ import pandas as pd
 
 from plogpy.parser.common import PerfLogParser
 
+#TODO: sar -d, sar -q, sar -n (IP|EIP|UDP|SOCK|ALL), sar -p
+
+
+class SarSysLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar (sar -w)", 
+            [
+                r'proc/s\s+cswch/s'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        multi_cols = [
+            ("Process", "proc/s"),
+            ("Context", "cswch/s"),
+        ]
+        return add_group_column(df, multi_cols)
+
+
+class SarBlockLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar (sar -b)", 
+            [
+                r'tps\s+rtps\s+wtps\s+bread/s\s+bwrtn/s'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        multi_cols = [
+            ("Transaction(/s)", "tps"),
+            ("R/W Transaction(/s)", "rtps"),
+            ("R/W Transaction(/s)", "wtps"),
+            ("Block RW(/s)", "bread/s"),
+            ("Block RW(/s)", "bwrtn/s"),
+        ]
+        return add_group_column(df, multi_cols)
+
+
+class SarSwapLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar (sar -S)", 
+            [
+                r'kbswpfree\s+kbswpused\s+%swpused\s+kbswpcad\s+%swpcad'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        multi_cols = [
+            ("Swap(KB)", "kbswpfree"),
+            ("Swap(KB)", "kbswpused"),
+            ("Swap(%)", "%swpused"),
+            ("Swapcad(KB)", "kbswpcad"),
+            ("Swapcad(%)", "%swpcad"),
+        ]
+        return add_group_column(df, multi_cols)
+
 
 class SarRamLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar_ram", 
+        return ("sar (sar -r)", 
             [
                 r'kbmemfree\s+kbavail\s+kbmemused\s+%memused\s+kbbuffers\s+kbcached\s+kbcommit\s+%commit\s+kbactive\s+kbinact\s+kbdirty'
             ])
@@ -35,7 +97,7 @@ class SarRamLogParser(PerfLogParser):
 class SarEtcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar_etcp", 
+        return ("sar (sar -n ETCP)", 
             [
                 r'atmptf/s\s+estres/s\s+retrans/s\s+isegerr/s\s+orsts/s'
             ])
@@ -49,7 +111,7 @@ class SarEtcpLogParser(PerfLogParser):
 class SarTcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar_tcp", 
+        return ("sar (sar -n TCP)", 
             [
                 r'active/s\s+passive/s\s+iseg/s\s+oseg/s\s+'
             ])
@@ -81,7 +143,7 @@ def add_group_column(df: pd.DataFrame, tuples):
 class SarEdevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar_edev", 
+        return ("sar (sar -n EDEV)", 
             [
                 r'IFACE\s+rxerr/s\s+txerr/s\s+coll/s\s'
             ])
@@ -107,7 +169,7 @@ class SarEdevLogParser(PerfLogParser):
 class SarDevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar_dev", 
+        return ("sar (sar -n DEV)", 
             [
                 r'IFACE\s+rxpck/s\s+txpck/s\s+rxkB/s\s+txkB/s'
             ])
@@ -132,7 +194,7 @@ class SarDevLogParser(PerfLogParser):
 class SarCpuLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar_cpu", 
+        return ("sar (sar -u | -u ALL | -P ALL)", 
             [
                 r'CPU\s+\%user\s+\%nice\s+\%system\s+\%iowait\s+\%steal\s+\%idle',
                 r'CPU\s+\%usr\s+\%nice\s+\%sys\s+'
