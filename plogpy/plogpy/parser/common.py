@@ -1,5 +1,8 @@
 import abc
 import collections
+import importlib
+import os
+import pkgutil
 import re
 
 import pandas as pd
@@ -8,6 +11,10 @@ from plogpy.type import LogType
 
 
 class PerfLogParser(abc.ABC):
+    """
+    Base class of parser.
+    Each log parser class must inherit this class.
+    """
     @staticmethod
     @abc.abstractmethod
     def regiter_info() -> tuple:
@@ -21,29 +28,11 @@ class PerfLogParser(abc.ABC):
         pass
 
 
-#TODO: load parser dymanically (pkgutil.walk_packages)
-from plogpy.parser.dstat import DstatLogParser
-from plogpy.parser.sar import SarCpuLogParser
-from plogpy.parser.sar import SarDevLogParser
-from plogpy.parser.sar import SarEdevLogParser
-from plogpy.parser.sar import SarTcpLogParser
-from plogpy.parser.sar import SarEtcpLogParser
-from plogpy.parser.sar import SarRamLogParser
-from plogpy.parser.sar import SarBlockLogParser
-from plogpy.parser.sar import SarSwapLogParser
-from plogpy.parser.sar import SarSysLogParser
-
-PARSER_CLASSES = [
-    DstatLogParser, SarCpuLogParser, SarDevLogParser, SarEdevLogParser, 
-    SarTcpLogParser, SarEtcpLogParser, SarRamLogParser, SarBlockLogParser, SarSwapLogParser,
-    SarSysLogParser
-]
-
 #key=id, value=([regex,...], parser)
 LOG_PARSER_DICT = {}
 regexes_set = set()
 def __init_log_parsers():
-    for cls in PARSER_CLASSES:
+    for cls in __get_parser_classes():
         log_type, regexes = cls.regiter_info()
         # Check duplication
         if log_type in LOG_PARSER_DICT:
@@ -55,6 +44,39 @@ def __init_log_parsers():
                 if regex in rs:
                     raise Exception(f"Duplicated '{regex}'. Log type=({log_type}, {t})")
             regexes_set.add(regex)
+
+
+#TODO: common.py is not suitable root path for checking parser classes??? 
+def __get_parser_classes() -> list:
+    """
+    Collect list of PerfLogParser class from current path of the module (that is common.py).
+    """
+    # get modules
+    path = os.path.dirname(__file__)
+    mod_names = [modname for _, modname, _ in pkgutil.iter_modules(path=[path])]
+    modules = [importlib.import_module('.' + modname, __package__) for modname in mod_names]
+
+    parser_classes = []
+    for module in modules:
+        class_names = dir(module)
+        for classname in class_names:
+            cl = getattr(module, classname)
+            if __is_parser_class(cl):
+                parser_classes.append(cl)
+    return parser_classes
+
+
+def __is_parser_class(class_ref) -> bool:
+    """
+    Check if the class is the subclass of PerLogParser
+    """
+    try:
+        if issubclass(class_ref, PerfLogParser) and class_ref is not PerfLogParser:
+            return True
+    except:
+        # Type Error (ex. dict)
+        pass
+    return False
 
 
 def get_matched_parser(target_file: str) -> PerfLogParser:
