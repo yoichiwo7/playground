@@ -21,18 +21,23 @@ class PerfLogParser(abc.ABC):
         """
         (unique_log_type, [regex, ...])
         """
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def parse(self, path: str) -> pd.DataFrame:
-        pass
+        """
+        Parse file of specifed path.
+        Returns pd.DataFrame.
+        """
+        raise NotImplementedError
 
 
 #key=id, value=([regex,...], parser)
 LOG_PARSER_DICT = {}
 regexes_set = set()
 def __init_log_parsers():
-    for cls in __get_parser_classes():
+    parser_classes = __get_parser_classes()
+    for cls in parser_classes:
         log_type, regexes = cls.regiter_info()
         # Check duplication
         if log_type in LOG_PARSER_DICT:
@@ -56,6 +61,7 @@ def __get_parser_classes() -> list:
     mod_names = [modname for _, modname, _ in pkgutil.iter_modules(path=[path])]
     modules = [importlib.import_module('.' + modname, __package__) for modname in mod_names]
 
+    # get parser classes in each module
     parser_classes = []
     for module in modules:
         class_names = dir(module)
