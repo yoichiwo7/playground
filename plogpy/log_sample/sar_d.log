@@ -1,0 +1,51 @@
+Linux 4.15.0-1-MANJARO (thinkpad) 	2018年03月13日 	_x86_64_	(4 CPU)
+
+23時17分32秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分33秒  dev259-0      4.00      0.00     72.00     18.00      0.00      1.75      0.00      0.00
+
+23時17分33秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分34秒  dev259-0     16.00      0.00    144.00      9.00      0.00      0.81      0.00      0.00
+
+23時17分34秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分35秒  dev259-0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+
+23時17分35秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分36秒  dev259-0     47.00      0.00    344.00      7.32      0.00      0.00      0.00      0.00
+
+23時17分36秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分37秒  dev259-0     46.00      0.00   1744.00     37.91      0.01      1.24      0.15      0.70
+
+23時17分37秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分38秒  dev259-0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+
+23時17分38秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分39秒  dev259-0     37.00      0.00    244.00      6.59      0.00      0.00      0.00      0.00
+
+23時17分39秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分40秒  dev259-0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+
+23時17分40秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分41秒  dev259-0     93.00      0.00   2036.00     21.89      0.00      1.83      0.00      0.00
+
+23時17分41秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分42秒  dev259-0     11.00      0.00    468.00     42.55      0.00      0.55      0.00      0.00
+
+23時17分42秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分43秒  dev259-0     41.00      0.00    448.00     10.93      0.00      1.46      0.00      0.00
+
+23時17分43秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分44秒  dev259-0      6.00      0.00     52.00      8.67      0.00      1.17      0.00      0.00
+
+23時17分44秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分45秒  dev259-0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+
+23時17分45秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分46秒  dev259-0    387.00      0.00   4048.00     10.46      0.05      0.16      0.02      0.60
+
+23時17分46秒       DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+23時17分47秒  dev259-0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+
+
+
+平均値:        DEV       tps     rkB/s     wkB/s   areq-sz    aqu-sz     await     svctm     %util
+平均値:   dev259-0     45.87      0.00    640.00     13.95      0.00      0.55      0.02      0.09

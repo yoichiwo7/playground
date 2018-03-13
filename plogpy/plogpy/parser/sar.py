@@ -4,7 +4,53 @@ import pandas as pd
 
 from plogpy.parser.common import PerfLogParser
 
-#TODO: sar -d, sar -q, sar -n (IP|EIP|UDP|SOCK|ALL), sar -p
+#TODO: sar -n (IP|EIP|UDP|SOCK|ALL)
+
+
+class SarDiskLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar (sar -d)", 
+            [
+                r'DEV\s+tps\s+rkB/s\s+wkB/s\s+areq-sz\s+aqu-sz\s+await\s+svctm\s+%util'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        multi_cols = [
+            ("Transaction", "tps"),
+            ("R/W(KB)", "rkB/s"),
+            ("R/W(KB)", "wkB/s"),
+            ("ReqSize(KB)", "areq-sz"),
+            ("ReqQueue", "aqu-sz"),
+            ("Wait(ms)", "await"),
+            ("ServiceTime(ms)", "svctm"),
+            ("Usage(%)", "%util"),
+        ]
+        return add_group_column(df, multi_cols)
+
+
+class SarLoadAverageLogParser(PerfLogParser):
+    @staticmethod
+    def regiter_info():
+        return ("sar (sar -q)", 
+            [
+                r'runq-sz\s+plist-sz\s+ldavg-1\s+ldavg-5\s+ldavg-15\s+blocked'
+            ])
+
+    def parse(self, path):
+        parser = SarLogParser()
+        df = parser.parse(path)
+        multi_cols = [
+            ("Run Queue", "runq-sz"),
+            ("Task List", "plist-sz"),
+            ("Load Average(min)", "ldavg-1"),
+            ("Load Average(min)", "ldavg-5"),
+            ("Load Average(min)", "ldavg-15"),
+            ("Blocked", "blocked"),
+        ]
+        return add_group_column(df, multi_cols)
 
 
 class SarSysLogParser(PerfLogParser):
