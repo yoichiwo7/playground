@@ -1,8 +1,11 @@
-TOOD: The document is under construction. It may contain old/wrong information.
+> TOOD: The document is under construction. It may contain old/wrong information.
 
-# Overview 
 
-`plogpy` is CLI/Python module for generating a report from a performance-related log file.
+`plogpy` is CLI/Python module for generating pandas DataFrame or Excel report file from 
+peformance-related logs.
+
+
+# Features
 
 It has following features:
 
@@ -10,43 +13,32 @@ It has following features:
 - Generate pandas DataFrame.
 - Output as CSV/JSON.
 - Auto detects log type. (Not so smart thongh)
+- Provide CLI for generating excel report.
 
-TODO: 
+# Supported Input (Log types)
 
-- Plugin to extend supported log type.
-  - If you can generate DataFrame, you've completed the plugin.
-- PNG image charts.
-- Resample to reduce large data.
-- Nice HTML report with pretty charts.
-- Vega/Vega Lite support.
+`plogpy` supports log types such as dstat and sar.
+You can check all supported log types by following command.
 
+```bash
+# List supported log types.
+plogpy-cli list
+```
 
 # Supported Output
 
 The following output formats are supported.
 
-  - Excel
+  - Excel 2007
+    - data sheet, stats sheet, and charts sheet are included.
   - CSV (Experimental)
   - JSON (Experimental)
 
+# Usage
 
-# Supported log types
+## Use as Command Line
 
-Current version support following type of performance-related log file.
-
-  - dstat (--output)
-  - sar
-
-TODO:
-
-  - ~~vmstat~~
-  - ~~meminfo~~
-  - ~~docker stats~~
-  - ~~df~~
-  - ~~xxx~~
-
-
-# CLI Usage
+Generate a report file (Excel2007 format) from a log file. You can also set several options.
 
 ```bash
 # Generate Excel(2007) from a log file.
@@ -55,10 +47,10 @@ plogpy-cli excel dstat.log dstat.xlsx
 # Disable chart sheet
 plogpy-cli excel --no-chart dstat.log dstat.xlsx
 
-# Charts for each series
+# Generate charts for each series
 plogpy-cli excel --each dstat.log dstat.xlsx
 
-# PNG image charts
+# Generate PNG image charts instead of Excel charts.
 plogpy-cli excel --png dstat.log dstat.xlsx
 ```
 
@@ -73,11 +65,13 @@ plogpy-cli <SUB_COMMAND> --help
 ```
 
 
-# Module Usage
+## Use as Python Module
 
 You can also use plogpy as python module.
+
 Because plogpy uses pandas library under the hood, you can access to DataFrame
 and do what ever you need to do.
+If you are not satisfied with CLI features, build your own features.
 
 ```python
 import plogpy
@@ -85,9 +79,28 @@ import plogpy
 # Generate pandas DataFrame from the specified log
 df = plogpy.parse_log("dstat.log")
 
-# Specify log type
-df = plogpy.parse_log("dstat.log", LogType.DSTAT)
-
-# Generate Excel from specfied log
-df = plogpy.generate_excel_report("dstat.log" "dstat.xlsx")
+# Do whatever you need to do with pandas DataFrame
+df.head()
+df.tail()
+df.describe()
 ```
+
+You can use it for generating files too.
+
+```python
+import plogpy
+
+# Generate Excel
+plogpy.generate_excel_report("dstat.log" "dstat.xlsx")
+
+# Generate images
+plogpy.generate_images("dstat.log" "dstat_images/")
+```
+
+# TODO: 
+
+- PNG image charts.
+- Resample option for timestamp index DataFrame.
+- Nice HTML report with pretty charts.
+- Vega/Vega Lite support.
+- Show more information on log type. (ex. regex pattern, expected format example)
