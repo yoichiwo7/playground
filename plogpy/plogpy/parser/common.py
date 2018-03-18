@@ -95,6 +95,11 @@ def get_supported_list() -> list:
 
 
 def __detect_log_type(target_file: str, scan_line_num: int = 5) -> LogType:
+    """
+    Scan the target_file until scan_line_num and detect the log type.
+    Return LogType.
+    Throws Exception if no appropriate log type is found.
+    """
     with open(target_file) as f:
         for i, line in enumerate(f):
             if i == scan_line_num:
