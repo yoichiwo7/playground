@@ -8,6 +8,10 @@ def sap():
     print(os.getcwd())
     return send_from_directory("static", "index.html")
 
+@app.route("/hello")
+def hello():
+    return "hello world. 日本語にも対応"
+
 @app.route("/<int:bars_count>/")
 def chart(bars_count):
     if bars_count <= 0:
