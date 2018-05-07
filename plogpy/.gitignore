@@ -3,3 +3,4 @@
 __cache__/
 build/
 *.pyc
+**/*.xlsx
