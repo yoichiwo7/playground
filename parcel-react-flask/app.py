@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, send_from_directory, request, jsonify
 import os
+import random
 
 app = Flask(__name__, static_url_path='')
 
@@ -21,7 +22,8 @@ def hello():
 
 @app.route("/dataset")
 def dataset():
-    return jsonify([1, 2, 4, 8, 4, 2, 1])
+    l = [random.randint(0, 20) for _ in range(7)]
+    return jsonify(l)
 
 @app.route("/echo", methods=['POST'])
 def echo():
