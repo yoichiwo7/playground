@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, send_from_directory, request
+from flask import Flask, render_template, url_for, send_from_directory, request, jsonify
 import os
 
 app = Flask(__name__, static_url_path='')
@@ -18,6 +18,10 @@ def sap():
 @app.route("/hello")
 def hello():
     return "hello world. 日本語にも対応"
+
+@app.route("/dataset")
+def dataset():
+    return jsonify([1, 2, 4, 8, 4, 2, 1])
 
 @app.route("/echo", methods=['POST'])
 def echo():
