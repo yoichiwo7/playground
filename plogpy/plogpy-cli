@@ -93,10 +93,10 @@ def csv(in_file, stats):
     df.to_csv(path_or_buf=sys.stdout, quoting=csv_mod.QUOTE_NONNUMERIC)
 
 
-@plogpy_cmd.command()
+@plogpy_cmd.command("json")
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
 @click.option('--stats', is_flag=True, help="Output statistics JSON string.")
-def json(in_file, stats):
+def to_json(in_file, stats):
     """
     Output JSON string.
     """
