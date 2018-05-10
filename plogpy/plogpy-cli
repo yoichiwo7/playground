@@ -2,6 +2,7 @@
 import collections
 import csv as csv_mod
 import glob
+import json
 import os
 import sys
 
@@ -102,8 +103,13 @@ def json(in_file, stats):
     df = plogpy.parse_log(in_file)
     if stats:
         df = df.describe()
-    df.to_json(path_or_buf=sys.stdout)
-
+    columns = df.columns.tolist()
+    #TODO: not suited for large data. make it more efficient?
+    d = {}
+    d["index"] = df.index.tolist()
+    d["column"] = [str(col) for col in columns]
+    d["data"] = { str(col):df[col].values.tolist() for col in columns}
+    print(json.dumps(d, indent=4))
 
 
 @plogpy_cmd.command()

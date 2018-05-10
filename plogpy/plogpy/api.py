@@ -15,7 +15,7 @@ def get_supported_log_types() -> list:
     return get_supported_list()
 
 
-def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> dict:
+def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> pd.DataFrame:
     """
     Parse performance log.
     Returns dictionary.
