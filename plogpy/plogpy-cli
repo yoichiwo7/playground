@@ -130,21 +130,8 @@ def to_json(in_file, stats):
     """
     Output JSON string.
     """
-    d = {}
-    df = plogpy.parse_log(in_file)
-    if stats:
-        d["stats"] = {}
-        put_json_object(df.describe(), d["stats"])
-    d["data"] = {}
-    put_json_object(df, d["data"])
-    print(json.dumps(d, indent=4))
-
-def put_json_object(df, d):
-    #TODO: not suited for large data. make it more efficient?
-    columns = df.columns.tolist()
-    d["index"] = df.index.tolist()
-    d["column"] = [str(col) for col in columns]
-    d["values"] = { str(col):df[col].values.tolist() for col in columns}
+    json_obj = plogpy.generate_json(in_file, stats)
+    print(json.dumps(json_obj, indent=None))
 
 
 @plogpy_cmd.command()

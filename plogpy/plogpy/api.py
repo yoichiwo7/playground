@@ -53,3 +53,25 @@ def generate_excel_report(
         use_png=use_png,
         chart_each=each_chart)
     writer.save()
+
+
+def generate_json(input_path: str, stats: bool) -> dict:
+    """
+    Generates JSON dictionary from log file.
+    """
+    d = {}
+    df = parse_log(input_path)
+    if stats:
+        d["stats"] = {}
+        __put_json_object(df.describe(), d["stats"])
+    d["data"] = {}
+    __put_json_object(df, d["data"])
+    return d
+
+
+def __put_json_object(df, d):
+    #TODO: not suited for large data. make it more efficient?
+    columns = df.columns.tolist()
+    d["index"] = df.index.tolist()
+    d["column"] = [str(col) for col in columns]
+    d["values"] = { str(col):df[col].values.tolist() for col in columns}
