@@ -21,7 +21,8 @@ def plogpy_cmd():
 
 
 @plogpy_cmd.command()
-def tryit():
+@click.option('--each', is_flag=True, help="Add more charts for each series.")
+def tryit(each):
     """
     Generate excel file from sample log files.
     """
@@ -40,7 +41,8 @@ def tryit():
         reports.append(headpath + ext)
     
     for log, report in zip(logs, reports):
-        plogpy.generate_excel_report(log, report)
+        print(f"- Parsing - {log}")
+        plogpy.generate_excel_report(log, report, each_chart=each)
 
 
 #TODO: option

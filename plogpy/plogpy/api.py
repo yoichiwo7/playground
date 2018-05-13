@@ -4,7 +4,7 @@ import pandas as pd
 
 from .parser.common import get_matched_parser, get_parser, get_supported_list
 from .type import LogType
-from .writer import write_df_to_excel
+from .writer import XlsxWriter, WriterConfig
 
 
 """
@@ -43,7 +43,10 @@ def generate_excel_report(
     writer = pd.ExcelWriter(output_path)
     file_name = os.path.split(output_path)[-1]
     name = os.path.splitext(file_name)[0]
-    write_df_to_excel(writer, df, name, 
+    report_writer = XlsxWriter(
+        writer_config=WriterConfig(chart_type_foreach=("line", "unstacked"))
+    )
+    report_writer.write_df_to_excel(writer, df, name, 
         enable_data_sheet=enable_data_sheet,
         enable_stats_sheet=enable_stats_sheet,
         enable_chart_sheet=enable_chart_sheet,
