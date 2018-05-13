@@ -27,7 +27,8 @@ class Application extends React.Component {
     dataset = response.data
 
     //TODO:
-    const ctx = (this.refs.canvas as HTMLCanvasElement).getContext('2d')
+    const canvas = this.refs.canvas as HTMLCanvasElement
+    const ctx = canvas.getContext('2d')
     const chart = new Chart(ctx, {
         // The type of chart we want to create
         type: 'line',
