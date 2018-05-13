@@ -4,6 +4,7 @@ import csv as csv_mod
 import glob
 import json
 import os
+from os.path import isdir, isfile
 import sys
 
 import click
@@ -44,30 +45,57 @@ def tryit(each):
         print(f"- Parsing - {log}")
         plogpy.generate_excel_report(log, report, each_chart=each)
 
+#TODO: add report type -> ["xlsx", "html"]
 
-#TODO: option
 @plogpy_cmd.command()
-@click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
-@click.argument("out_file", type=click.Path(exists=False, dir_okay=False))
+@click.argument("in_path", type=click.Path(exists=True, dir_okay=True))
+@click.argument("out_path", type=click.Path(exists=False, dir_okay=True))
+@click.option('--recursive', is_flag=True, help="Check log directory recursively.")
 @click.option('--data/--no-data', default=True, help="Add data sheet. (default: --data)")
 @click.option('--stats/--no-stats', default=True, help="Add statistics sheet. (default: --stats)")
 @click.option('--chart/--no-chart', default=True, help="Add Chart sheet. (default: --chart)")
 @click.option('--png', is_flag=True, help="Turn excel chart to png images.")
 @click.option('--each', is_flag=True, help="Add more charts for each series.")
-def excel(in_file, out_file, data, stats, chart, png, each):
+def report(in_path, out_path, recursive, data, stats, chart, png, each):
     """
-    Generate excel file.
+    Generate report file.
     Statistics and charts can be added by option.
     """
+    # file/file
+    if isfile(in_path) and not isdir(out_path):
+        in_out_pairs = [(in_path, out_path)]
+    elif isdir(in_path) and isdir(out_path):
+        in_out_pairs = []
+        if recursive:
+            #TODO:
+            for dirpath, _, files in os.walk(in_path): 
+                for f in files:
+                    ipath = os.path.join(in_path, dirpath, f)
+                    opath = os.path.join(out_path, dirpath, f) + ".xlsx"
+                    in_out_pairs.append((ipath, opath))
+        else:
+            for f in os.listdir(in_path):
+                ipath = os.path.join(in_path, f)
+                if not isfile(ipath):
+                    continue
+                outfile = f + ".xlsx"
+                opath = os.path.join(out_path, outfile)
+                in_out_pairs.append((ipath, opath))
+    else:
+        print("Error: incorrect in/out. 'file/file' or 'dir/dir' is supported.")
+        sys.exit(1)
 
-    #TODO: add resample options. num=5, type=max/average/etc...
 
-    plogpy.generate_excel_report(in_file, out_file,
-        enable_data_sheet=data,
-        enable_stats_sheet=stats,
-        enable_chart_sheet=chart,
-        use_png=png,
-        each_chart=each)
+    for ipath, opath in in_out_pairs:
+        # TODO: generate sub-directories in recursive mode. or no output dir for recursive mode??
+        print(ipath, opath)
+        plogpy.generate_excel_report(ipath, opath,
+            enable_data_sheet=data,
+            enable_stats_sheet=stats,
+            enable_chart_sheet=chart,
+            use_png=png,
+            each_chart=each)
+
 
 
 # TODO: maybe also show matching log pattern?
@@ -102,16 +130,21 @@ def to_json(in_file, stats):
     """
     Output JSON string.
     """
+    d = {}
     df = plogpy.parse_log(in_file)
     if stats:
-        df = df.describe()
-    columns = df.columns.tolist()
+        d["stats"] = {}
+        put_json_object(df.describe(), d["stats"])
+    d["data"] = {}
+    put_json_object(df, d["data"])
+    print(json.dumps(d, indent=4))
+
+def put_json_object(df, d):
     #TODO: not suited for large data. make it more efficient?
-    d = {}
+    columns = df.columns.tolist()
     d["index"] = df.index.tolist()
     d["column"] = [str(col) for col in columns]
-    d["data"] = { str(col):df[col].values.tolist() for col in columns}
-    print(json.dumps(d, indent=4))
+    d["values"] = { str(col):df[col].values.tolist() for col in columns}
 
 
 @plogpy_cmd.command()
