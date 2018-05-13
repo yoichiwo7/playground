@@ -18,6 +18,7 @@ click = "*"
 
 pytest = "*"
 pylint = "*"
+rope = "*"
 
 
 [requires]
