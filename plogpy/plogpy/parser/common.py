@@ -100,8 +100,12 @@ def __detect_log_type(target_file: str, scan_line_num: int = 5) -> LogType:
     Return LogType.
     Throws Exception if no appropriate log type is found.
     """
+    MAX_ONE_LINE_BYTE_NUM = 4096
     with open(target_file) as f:
-        for i, line in enumerate(f):
+        i = 0
+        while True:
+            i += 1
+            line = f.readline(MAX_ONE_LINE_BYTE_NUM)
             if i == scan_line_num:
                 break
             for log_type, (patterns, _) in LOG_PARSER_DICT.items():
