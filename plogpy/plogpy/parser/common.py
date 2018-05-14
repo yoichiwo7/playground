@@ -10,6 +10,9 @@ import pandas as pd
 from plogpy.type import LogType
 
 
+class NoMatchedError(Exception):
+    pass
+
 class PerfLogParser(abc.ABC):
     """
     Base class of parser.
@@ -112,7 +115,7 @@ def __detect_log_type(target_file: str, scan_line_num: int = 5) -> LogType:
                 for pattern in patterns:
                     if re.search(pattern, line):
                         return log_type
-    raise Exception("No matched type found:" + target_file)
+    raise NoMatchedError("No matched type found:" + target_file)
 
 
 def get_parser(log_type: LogType) -> PerfLogParser:

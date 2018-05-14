@@ -61,10 +61,13 @@ def report(in_path, out_path, recursive, data, stats, chart, png, each):
     Generate report file.
     Statistics and charts can be added by option.
     """
+    dir_mode = False
+
     # file/file
     if isfile(in_path) and not isdir(out_path):
         in_out_pairs = [(in_path, out_path)]
     elif isdir(in_path) and isdir(out_path):
+        dir_mode = True
         in_out_pairs = []
         if recursive:
             #TODO:
@@ -87,15 +90,15 @@ def report(in_path, out_path, recursive, data, stats, chart, png, each):
 
 
     for ipath, opath in in_out_pairs:
-        # TODO: generate sub-directories in recursive mode. or no output dir for recursive mode??
-        print(ipath, opath)
+        if dir_mode and not plogpy.is_parsable(ipath):
+            continue
+        print(f"Parsing: in={ipath}, out={opath}")
         plogpy.generate_excel_report(ipath, opath,
             enable_data_sheet=data,
             enable_stats_sheet=stats,
             enable_chart_sheet=chart,
             use_png=png,
             each_chart=each)
-
 
 
 # TODO: maybe also show matching log pattern?

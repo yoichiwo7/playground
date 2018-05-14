@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from .parser.common import get_matched_parser, get_parser, get_supported_list
+from .parser.common import get_matched_parser, get_parser, get_supported_list, NoMatchedError
 from .type import LogType
 from .writer import XlsxWriter, WriterConfig
 
@@ -13,6 +13,15 @@ Public APIs for plogpy
 
 def get_supported_log_types() -> list:
     return get_supported_list()
+
+
+#TODO: checks all pattern twice (is_parsable and parse_log) -> make it more efficient in future.
+def is_parsable(input_path: str) -> bool:
+    try:
+        get_matched_parser(input_path)
+        return True
+    except NoMatchedError:
+        return False
 
 
 def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> pd.DataFrame:
