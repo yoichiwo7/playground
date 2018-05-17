@@ -4,23 +4,22 @@ url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[scripts]
+tryit = "python plogpy-cli tryit"
+list = "python plogpy-cli list"
+
 
 [packages]
-
 pyfunctional = "*"
 pandas = "*"
 xlsxwriter = "*"
 matplotlib = "*"
 click = "*"
 
-
 [dev-packages]
-
 pytest = "*"
 pylint = "*"
 rope = "*"
 
-
 [requires]
-
 python_version = "3.6"
