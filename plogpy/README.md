@@ -15,6 +15,7 @@ It has following features:
 - Auto detects log type. (Not so smart thongh)
 - Provide CLI for generating excel report.
 
+
 # Supported Input (Log types)
 
 `plogpy` supports log types such as dstat and sar.
@@ -41,17 +42,23 @@ The following output formats are supported.
 Generate a report file (Excel2007 format) from a log file. You can also set several options.
 
 ```bash
-# Generate Excel(2007) from a log file.
-plogpy-cli excel dstat.log dstat.xlsx
+# Generate Excel(2007) -> file/file
+plogpy-cli report dstat.log dstat.xlsx
+
+# Generate Excel(2007) -> dir/dir (only current directory)
+plogpy-cli report logdir/ reportdir/
+
+# Generate Excel(2007) -> dir/dir (recursively) **Not supported yet**
+# plogpy-cli report --recursive logdir/
 
 # Disable chart sheet
-plogpy-cli excel --no-chart dstat.log dstat.xlsx
+plogpy-cli report --no-chart dstat.log dstat.xlsx
 
 # Generate charts for each series
-plogpy-cli excel --each dstat.log dstat.xlsx
+plogpy-cli report --each dstat.log dstat.xlsx
 
 # Generate PNG image charts instead of Excel charts.
-plogpy-cli excel --png dstat.log dstat.xlsx
+plogpy-cli report --png dstat.log dstat.xlsx
 ```
 
 See the help for more details.
@@ -98,6 +105,13 @@ plogpy.generate_images("dstat.log" "dstat_images/")
 ```
 
 # TODO: 
+
+Major 
+
+- Manage parser/writer for each logtype.
+- Support recursive mode.
+
+Minor 
 
 - PNG image charts.
 - Resample option for timestamp index DataFrame.
