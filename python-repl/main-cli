@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+from prompt_toolkit import prompt
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.completion import Completer, Completion, CompleteEvent
+from prompt_toolkit.document import Document
+
+COMPLETION_DICT = {
+    "add": {
+        "--force": {
+            "yes": None,
+            "no": None
+        },
+        "--level": {
+            "info": None,
+            "debug": None,
+            "trace": None
+        }
+    },
+}
+
+class MyCustomCompleter(Completer):
+    """
+    Completion based on sequential words. (From begining to current word)
+    """
+    
+    def get_completions(self, document: Document, complete_event: CompleteEvent):
+        #print(document.get_word_under_cursor())
+
+        word_start_pos, _ = document.find_boundaries_of_current_word()
+
+        words = self.__get_words(document)
+
+        for word in words:
+            partial = document.get_word_under_cursor()
+            if word.startswith(partial):
+                yield Completion(word, start_position=word_start_pos)
+
+    def __get_words(self, document):
+        words = document.text.split()
+
+        targets = COMPLETION_DICT
+        for w in words:
+            if w in targets:
+                if targets[w] is None:
+                    # No completion candidates
+                    return []
+                targets = targets[w]
+        return targets.keys()
+
+
+def main():
+    while 1:
+        user_input = prompt(
+            'PROMPT>',
+            history=FileHistory('history.txt'),
+            auto_suggest=AutoSuggestFromHistory(),
+            completer=MyCustomCompleter(),
+        )
+        print(user_input)
+
+
+if __name__ == '__main__':
+    main()
