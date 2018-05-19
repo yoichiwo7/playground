@@ -19,6 +19,78 @@ class WriterConfig():
         self.chart_type_foreach = chart_type_foreach
 
 
+class HtmlWriter():
+    def __init__(self, writer_config = None):
+        #TODO: prepare base class for Writer classes?
+        if not writer_config:
+            self.__config = WriterConfig()
+        else:
+            self.__config = writer_config
+    
+    def write_df_to_html(self, df, writer):
+        #TODO: Use HTML template. Read data from df.
+        header = """
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Report</title>
+</head>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+"""
+        footer = """
+</html>
+        """
+        html = header
+        first_level_cols = set([tup[0] for tup in df.columns.tolist()])
+        l = [100, 10, 50, 2, 20, 30, 45]
+        for col in first_level_cols:
+            # table
+            html += '<body>'
+            html += f'<h2>Statistics: {col}</h2>'
+            html += df[col].describe().to_html()
+
+            # chart
+            #TODO: 
+            html += '<canvas id="%s"></canvas> </body>' % (col)
+            html += '<script type="application/json" id="json%s">' % (col)
+            l = [e*2 for e in l]
+            html += str(l)
+            html += '</script>'
+            html += "<script> var ctx = document.getElementById('%s').getContext('2d'); " % (col)
+            html += "var elem = document.getElementById('json%s');" % (col)
+            html += """
+console.log(elem);
+var data = JSON.parse(elem.textContent);
+var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: ["January", "February", "March", "April", "May", "June", "July"],
+        datasets: [{
+            label: "My First dataset",
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: data,
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+});
+            </script>
+            """
+
+        html += footer
+        # Write to writer
+        writer.write(html)
+
 
 class XlsxWriter():
     def __init__(self, writer_config = None):

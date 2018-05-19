@@ -144,40 +144,8 @@ def to_html(in_file):
     """
     Output HTML.
     """
-    df = plogpy.parse_log(in_file)
+    plogpy.generate_html_report(in_file, "report.html")
 
-    #TODO: move to other methods
-    from bokeh.models.annotations import Title
-    from bokeh.plotting import figure
-    from bokeh.resources import CDN
-    from bokeh.embed import file_html
-    from bokeh.embed import components
-
-    l = df.index.tolist()
-    plot = figure()
-    plot.circle(l, l)
-    t = Title()
-    t.text = 'new title'
-    plot.title = t
-    script, div = components(plot)
-
-    #plot = __simple_plot()
-
-    html = file_html([plot, plot], CDN, "my plot")
-    with open("report.html", "w") as f:
-        f.write(html)
-
-#TODO: remove this after experiment is done.
-def __simple_plot():
-    import numpy as np
-    from bokeh.plotting import figure, show, output_file
-    N = 1000000
-    x = np.random.normal(0, np.pi, N)
-    y = np.sin(x) + np.random.normal(0, 0.2, N)
-    #p = figure(output_backend="canvas")
-    p = figure(output_backend="webgl")
-    p.scatter(x, y, alpha=0.1)
-    return p
 
 @plogpy_cmd.command()
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))

@@ -4,7 +4,7 @@ import pandas as pd
 
 from .parser.common import get_matched_parser, get_parser, get_supported_list, NoMatchedError
 from .type import LogType
-from .writer import XlsxWriter, WriterConfig
+from .writer import HtmlWriter, XlsxWriter, WriterConfig
 
 
 """
@@ -62,6 +62,15 @@ def generate_excel_report(
         use_png=use_png,
         chart_each=each_chart)
     writer.save()
+
+
+def generate_html_report(
+    input_path: str, output_path: str
+) -> None:
+    df = parse_log(input_path)
+    with open(output_path, "w") as writer:
+        report_writer = HtmlWriter()
+        report_writer.write_df_to_html(df, writer)
 
 
 def generate_json(input_path: str, stats: bool) -> dict:
