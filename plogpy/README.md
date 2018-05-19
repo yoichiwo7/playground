@@ -110,6 +110,8 @@ Major
 
 - Manage parser/writer for each logtype.
 - Support recursive mode.
+- Downsample non-time-series data
+  https://stackoverflow.com/questions/37396264/pandas-equivalent-of-resample-for-integer-index?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 
 Minor 
 
