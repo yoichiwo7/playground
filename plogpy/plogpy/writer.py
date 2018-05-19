@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 from .util import get_parent_leaf_headers
@@ -29,7 +31,10 @@ class HtmlWriter():
     
     def write_df_to_html(self, df, writer):
         #TODO: Use HTML template. Read data from df.
-        header = """
+        parents_leaf_dict = get_parent_leaf_headers(df)
+        l = [100, 10, 50, 2, 20, 30, 45]
+
+        html = """
 <html>
 
 <head>
@@ -42,52 +47,64 @@ class HtmlWriter():
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
 """
-        footer = """
-</html>
-        """
-        html = header
-        first_level_cols = set([tup[0] for tup in df.columns.tolist()])
-        l = [100, 10, 50, 2, 20, 30, 45]
-        for col in first_level_cols:
+        myid = 100
+        for parent_tuple, cols in parents_leaf_dict.items():
+            myid += 1
             # table
             html += '<body>'
-            html += f'<h2>Statistics: {col}</h2>'
-            html += df[col].describe().to_html()
+            html += f'<h2>Statistics: {" : ".join(parent_tuple)}</h2>'
+            html += df[parent_tuple].describe().to_html()
 
             # chart
-            #TODO: 
-            html += '<canvas id="%s"></canvas> </body>' % (col)
-            html += '<script type="application/json" id="json%s">' % (col)
-            l = [e*2 for e in l]
-            html += str(l)
+            sub_df = df[parent_tuple]
+            #TODO: Use application/json script tag for data separation?
+            html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
+            #html += '<script type="application/json" id="json%d">' % (myid)
+            #html += '</script>'
+            html += "<script> var ctx = document.getElementById('canvas%d').getContext('2d'); " % (myid)
+            #html += "var elem = document.getElementById('json%d');" % (myid)
+            #html += "var data = JSON.parse(elem.textContent);"
+            chart_json = {
+                "type": "line",
+                "data": {
+                    "labels": sub_df.index.tolist(),
+                    "datasets": [
+                        {
+                            "label": col,
+                            "data": sub_df[col].values.tolist(),
+                            "radius": 0
+                        }
+                        for col in cols
+                    ]
+                },
+                "options": {
+                    "title": {
+                        "display": True,
+                        "fontSize": 20,
+                        "text": " : ".join(parent_tuple)
+                    },
+                    "legend": {
+                        "display": True,
+                    },
+                    "animation": {
+                        "duration": 0
+                    },
+                    "responsiveAnimationDuration": 0,
+                    "elements": {
+                        "line": {
+                            "tension": 0, # disables bezier curves
+                        }
+                    },
+                    "scales": {
+                        "yAxes": [{
+                            "stacked": True
+                        }]
+                    }
+                }
+            }
+            html += f"var chart = new Chart(ctx, {json.dumps(chart_json)});"
             html += '</script>'
-            html += "<script> var ctx = document.getElementById('%s').getContext('2d'); " % (col)
-            html += "var elem = document.getElementById('json%s');" % (col)
-            html += """
-console.log(elem);
-var data = JSON.parse(elem.textContent);
-var chart = new Chart(ctx, {
-    // The type of chart we want to create
-    type: 'line',
-
-    // The data for our dataset
-    data: {
-        labels: ["January", "February", "March", "April", "May", "June", "July"],
-        datasets: [{
-            label: "My First dataset",
-            backgroundColor: 'rgb(255, 99, 132)',
-            borderColor: 'rgb(255, 99, 132)',
-            data: data,
-        }]
-    },
-
-    // Configuration options go here
-    options: {}
-});
-            </script>
-            """
-
-        html += footer
+            html += '</html>'
         # Write to writer
         writer.write(html)
 
