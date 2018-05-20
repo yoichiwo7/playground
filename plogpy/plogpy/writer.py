@@ -30,8 +30,8 @@ class HtmlWriter():
             self.__config = writer_config
     
     def write_df_to_html(self, df, writer, max_samples=None):
-        boder_colors = get_colors(1.0)
-        bg_colors = get_colors(0.3)
+        border_colors = get_colors(1.0)
+        bg_colors = get_colors(0.2)
 
         #TODO: Use HTML template.
         parents_leaf_dict = get_parent_leaf_headers(df)
@@ -68,58 +68,69 @@ class HtmlWriter():
             # chart
             #TODO: Use application/json script tag for data separation?
             html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
-            #html += '<script type="application/json" id="json%d">' % (myid)
-            #html += '</script>'
             html += "<script> var ctx = document.getElementById('canvas%d').getContext('2d'); " % (myid)
-            #html += "var elem = document.getElementById('json%d');" % (myid)
-            #html += "var data = JSON.parse(elem.textContent);"
-            chart_json = {
-                "type": "line",
-                "data": {
-                    "labels": df_data.index.tolist(),
-                    "datasets": [
-                        {
-                            "label": col,
-                            "data": df_data[col].values.tolist(),
-                            "radius": 0,
-                            "fill": False,
-                            "borderWidth": 2,
-                            "borderColor": fg,
-                            "backgroundColor": bg
-                        }
-                        for col, fg, bg in zip(cols, boder_colors, bg_colors)
-                    ]
-                },
-                "options": {
-                    "title": {
-                        "display": True,
-                        "fontSize": 20,
-                        "text": " : ".join(parent_tuple)
-                    },
-                    "legend": {
-                        "display": True,
-                    },
-                    "animation": {
-                        "duration": 0
-                    },
-                    "responsiveAnimationDuration": 0,
-                    "elements": {
-                        "line": {
-                            "tension": 0, # disables bezier curves
-                        }
-                    },
-                    "scales": {
-                        "yAxes": [{
-                            "stacked": False
-                        }]
-                    }
-                }
-            }
+            chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors)
             html += f"var chart = new Chart(ctx, {json.dumps(chart_json)});"
             html += '</script>'
             html += '</html>'
         # Write to writer
         writer.write(html)
+    
+    def __get_chart_json_dict(self, df_data, parent_tuple, cols, border_colors, bg_colors, t="area"):
+        #TODO: Better input parameter. Fix filling bg color problem with alpha.
+        if t is "line":
+            chart_type = "line"
+            fill = False
+            stacked = False
+        else:
+            chart_type = "line"
+            fill = True
+            stacked = True
+        
+        d = {
+            "type": chart_type,
+            "data": {
+                "labels": df_data.index.tolist(),
+                "datasets": [
+                    {
+                        "label": col,
+                        "data": df_data[col].values.tolist(),
+                        "radius": 0,
+                        "fill": fill,
+                        "borderWidth": 2,
+                        "borderColor": fg,
+                        "backgroundColor": bg
+                    }
+                    for col, fg, bg in zip(cols, border_colors, bg_colors)
+                ]
+            },
+            "options": {
+                "title": {
+                    "display": True,
+                    "fontSize": 20,
+                    "text": " : ".join(parent_tuple)
+                },
+                "legend": {
+                    "display": True,
+                },
+                "animation": {
+                    "duration": 0
+                },
+                "responsiveAnimationDuration": 0,
+                "elements": {
+                    "line": {
+                        "tension": 0, # disables bezier curves
+                    }
+                },
+                "scales": {
+                    "yAxes": [{
+                        "stacked": stacked
+                    }]
+                }
+            }
+        }
+        return d
+
 
 
 class XlsxWriter():
