@@ -37,7 +37,10 @@ def down_sample_df(df: pd.DataFrame, max_samples=1024, round_num=2) -> pd.DataFr
     skip_row_num = 1
     skip_row_num += int(len(df) / max_samples)
     s = (df.index.to_series() / skip_row_num).astype(int)
-    df = df.groupby(s).std().set_index(s.index[0::skip_row_num])
+    df = (df
+            .groupby(s)
+            .mean()
+            .set_index(s.index[0::skip_row_num]))
     if round_num:
         df = df.round(round_num)
     return df
