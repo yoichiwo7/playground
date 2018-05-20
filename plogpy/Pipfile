@@ -8,12 +8,10 @@ tryit = "python plogpy-cli tryit"
 list = "python plogpy-cli list"
 
 [packages]
-pyfunctional = "*"
 pandas = "*"
 xlsxwriter = "*"
 matplotlib = "*"
 click = "*"
-bokeh = "*"
 
 [dev-packages]
 pytest = "*"
