@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from .util import get_parent_leaf_headers
+from .util import get_parent_leaf_headers, down_sample_df
 
 
 #TODO: rafactor class/namespace organization.
@@ -30,6 +30,24 @@ class HtmlWriter():
             self.__config = writer_config
     
     def write_df_to_html(self, df, writer):
+        boder_colors = [
+                'rgba(255,99,132,1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+        ]
+        bg_colors = [
+                'rgba(255,99,132,0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+        ]
+
+
         #TODO: Use HTML template. Read data from df.
         parents_leaf_dict = get_parent_leaf_headers(df)
         l = [100, 10, 50, 2, 20, 30, 45]
@@ -49,14 +67,21 @@ class HtmlWriter():
 """
         myid = 100
         for parent_tuple, cols in parents_leaf_dict.items():
+            sub_df = df[parent_tuple]
             myid += 1
+
             # table
             html += '<body>'
             html += f'<h2>Statistics: {" : ".join(parent_tuple)}</h2>'
-            html += df[parent_tuple].describe().to_html()
+            html += sub_df.describe().round(2).to_html(
+                col_space=10,
+                justify="right"
+            )
 
             # chart
-            sub_df = df[parent_tuple]
+            MAX_SAMPLE_NUM = 512
+            if len(df) > MAX_SAMPLE_NUM:
+                sub_df = down_sample_df(sub_df, MAX_SAMPLE_NUM)
             #TODO: Use application/json script tag for data separation?
             html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
             #html += '<script type="application/json" id="json%d">' % (myid)
@@ -72,9 +97,13 @@ class HtmlWriter():
                         {
                             "label": col,
                             "data": sub_df[col].values.tolist(),
-                            "radius": 0
+                            "radius": 0,
+                            "fill": False,
+                            "borderWidth": 2,
+                            "borderColor": fg,
+                            "backgroundColor": bg
                         }
-                        for col in cols
+                        for col, fg, bg in zip(cols, boder_colors, bg_colors)
                     ]
                 },
                 "options": {
@@ -97,7 +126,7 @@ class HtmlWriter():
                     },
                     "scales": {
                         "yAxes": [{
-                            "stacked": True
+                            "stacked": False
                         }]
                     }
                 }

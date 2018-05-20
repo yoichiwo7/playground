@@ -31,3 +31,13 @@ def get_parent_leaf_headers(df: pd.DataFrame) -> list:
             v = collected_headers.setdefault((), [])
             v.append(leaf)
         return collected_headers
+
+# TODO: currently very rough downsampling. make it better.
+def down_sample_df(df: pd.DataFrame, max_sample_num=1024, round_num=2) -> pd.DataFrame:
+    skip_row_num = 1
+    skip_row_num += int(len(df) / max_sample_num)
+    s = (df.index.to_series() / skip_row_num).astype(int)
+    df = df.groupby(s).std().set_index(s.index[0::skip_row_num])
+    if round_num:
+        df = df.round(round_num)
+    return df
