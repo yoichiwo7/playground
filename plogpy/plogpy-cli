@@ -12,12 +12,17 @@ import pandas as pd
 
 import plogpy
 
+g_max_sample = None
 
 @click.group()
-def plogpy_cmd():
+@click.option('--max-samples', help="Max data samples(rows). If exceeded, the data will be downsampled.")
+def plogpy_cmd(max_samples):
     """
     CLI tool for generating excel/csv/json from performance log.
     """
+    if max_samples:
+        global g_max_sample
+        g_max_sample = int(max_samples)
     pass
 
 
@@ -43,7 +48,10 @@ def tryit(each):
     
     for log, report in zip(logs, reports):
         print(f"- Parsing - {log}")
-        plogpy.generate_excel_report(log, report, each_chart=each)
+        plogpy.generate_excel_report(log, report, 
+            each_chart=each,
+            max_samples=g_max_sample
+        )
 
 #TODO: add report type -> ["xlsx", "html"]
 
@@ -95,6 +103,7 @@ def report(in_path, out_path, recursive, data, stats, chart, png, each):
         print(f"Parsing: in={ipath}, out={opath}")
         #TODO: support multiprocessing
         plogpy.generate_excel_report(ipath, opath,
+            max_samples=g_max_sample,
             enable_data_sheet=data,
             enable_stats_sheet=stats,
             enable_chart_sheet=chart,
@@ -144,7 +153,7 @@ def to_html(in_file):
     """
     Output HTML.
     """
-    plogpy.generate_html_report(in_file, "report.html")
+    plogpy.generate_html_report(in_file, "report.html", max_samples=g_max_sample)
 
 
 @plogpy_cmd.command()

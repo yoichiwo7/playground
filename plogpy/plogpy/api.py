@@ -39,6 +39,7 @@ def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> pd
 
 def generate_excel_report(
         input_path: str, output_path: str,
+        max_samples: int = None,
         enable_data_sheet: bool = True,
         enable_stats_sheet: bool = True,
         enable_chart_sheet: bool = True,
@@ -49,6 +50,7 @@ def generate_excel_report(
     Generates report file.
     """
     df = parse_log(input_path)
+    
     writer = pd.ExcelWriter(output_path)
     file_name = os.path.split(output_path)[-1]
     name = os.path.splitext(file_name)[0]
@@ -56,6 +58,7 @@ def generate_excel_report(
         writer_config=WriterConfig(chart_type_foreach=("line", "unstacked"))
     )
     report_writer.write_df_to_excel(writer, df, name, 
+        max_samples=max_samples,
         enable_data_sheet=enable_data_sheet,
         enable_stats_sheet=enable_stats_sheet,
         enable_chart_sheet=enable_chart_sheet,
@@ -65,12 +68,14 @@ def generate_excel_report(
 
 
 def generate_html_report(
-    input_path: str, output_path: str
+    input_path: str,
+    output_path: str,
+    max_samples: int = None
 ) -> None:
     df = parse_log(input_path)
     with open(output_path, "w") as writer:
         report_writer = HtmlWriter()
-        report_writer.write_df_to_html(df, writer)
+        report_writer.write_df_to_html(df, writer, max_samples=max_samples)
 
 
 def generate_json(input_path: str, stats: bool) -> dict:

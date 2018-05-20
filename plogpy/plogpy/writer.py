@@ -2,7 +2,7 @@ import json
 
 import pandas as pd
 
-from .util import get_parent_leaf_headers, down_sample_df
+from .util import get_parent_leaf_headers, down_sample_df, get_colors
 
 
 #TODO: rafactor class/namespace organization.
@@ -29,28 +29,12 @@ class HtmlWriter():
         else:
             self.__config = writer_config
     
-    def write_df_to_html(self, df, writer):
-        boder_colors = [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-        ]
-        bg_colors = [
-                'rgba(255,99,132,0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-        ]
+    def write_df_to_html(self, df, writer, max_samples=None):
+        boder_colors = get_colors(1.0)
+        bg_colors = get_colors(0.3)
 
-
-        #TODO: Use HTML template. Read data from df.
+        #TODO: Use HTML template.
         parents_leaf_dict = get_parent_leaf_headers(df)
-        l = [100, 10, 50, 2, 20, 30, 45]
 
         html = """
 <html>
@@ -67,21 +51,21 @@ class HtmlWriter():
 """
         myid = 100
         for parent_tuple, cols in parents_leaf_dict.items():
-            sub_df = df[parent_tuple]
+            df_stats = df[parent_tuple].describe(percentiles=[.25, .50, .75, .90, .99]).round(2)
+            df_data = df[parent_tuple]
+            if max_samples:
+                df_data = down_sample_df(df_data, max_samples=max_samples)
             myid += 1
 
             # table
             html += '<body>'
             html += f'<h2>Statistics: {" : ".join(parent_tuple)}</h2>'
-            html += sub_df.describe().round(2).to_html(
+            html += df_stats.to_html(
                 col_space=10,
                 justify="right"
             )
 
             # chart
-            MAX_SAMPLE_NUM = 512
-            if len(df) > MAX_SAMPLE_NUM:
-                sub_df = down_sample_df(sub_df, MAX_SAMPLE_NUM)
             #TODO: Use application/json script tag for data separation?
             html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
             #html += '<script type="application/json" id="json%d">' % (myid)
@@ -92,11 +76,11 @@ class HtmlWriter():
             chart_json = {
                 "type": "line",
                 "data": {
-                    "labels": sub_df.index.tolist(),
+                    "labels": df_data.index.tolist(),
                     "datasets": [
                         {
                             "label": col,
-                            "data": sub_df[col].values.tolist(),
+                            "data": df_data[col].values.tolist(),
                             "radius": 0,
                             "fill": False,
                             "borderWidth": 2,
@@ -146,6 +130,7 @@ class XlsxWriter():
             self.__config = writer_config
 
     def write_df_to_excel(self, writer, df: pd.DataFrame, name, index=True,
+            max_samples=None,
             enable_data_sheet=True,
             enable_stats_sheet=True,
             enable_chart_sheet=True,
@@ -159,27 +144,33 @@ class XlsxWriter():
         chart_each : add chart for each series (ex. usr, sys, wait)
         """
 
+        df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
+        df_data = df
+
+        print(max_samples)
+        if max_samples:
+            df_data = down_sample_df(df_data, max_samples=max_samples)
+
         #TODO: add use_png support
 
         FIXED_COL_POS = 0
-        parents_leaf_dict = get_parent_leaf_headers(df)
+        parents_leaf_dict = get_parent_leaf_headers(df_data)
         parents_num = max([len(parents) for parents in parents_leaf_dict.keys()])
         row_start_pos = 1
         if parents_num > 0:
             row_start_pos += parents_num
             row_start_pos += 1 # a blank row will be added at multi-index
-        row_end_pos = row_start_pos + len(df)
+        row_end_pos = row_start_pos + len(df_data)
 
         #TODO: adjust column width for DATA/STATS sheets.
         ## add DATA
         if enable_data_sheet:
             sheet_name_data = f'{name}_DATA'
-            df.to_excel(writer, sheet_name_data,
+            df_data.to_excel(writer, sheet_name_data,
                 float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
 
         ## add STAT
         if enable_stats_sheet:
-            df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
             sheet_name_stats = f'{name}_STATS'
             df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
 
