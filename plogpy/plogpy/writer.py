@@ -31,7 +31,7 @@ class HtmlWriter():
     
     def write_df_to_html(self, df, writer, max_samples=None):
         border_colors = get_colors(1.0)
-        bg_colors = get_colors(0.2)
+        bg_colors = get_colors(1.0)
 
         #TODO: Use HTML template.
         parents_leaf_dict = get_parent_leaf_headers(df)
@@ -55,7 +55,6 @@ class HtmlWriter():
             df_data = df[parent_tuple]
             if max_samples:
                 df_data = down_sample_df(df_data, max_samples=max_samples)
-            myid += 1
 
             # table
             html += '<body>'
@@ -67,25 +66,34 @@ class HtmlWriter():
 
             # chart
             #TODO: Use application/json script tag for data separation?
-            html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
-            html += "<script> var ctx = document.getElementById('canvas%d').getContext('2d'); " % (myid)
-            chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors)
-            html += f"var chart = new Chart(ctx, {json.dumps(chart_json)});"
-            html += '</script>'
+            for t in ["line", "area"]:
+                myid += 1
+                html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
+                html += "<script> var ctx = document.getElementById('canvas%d').getContext('2d'); " % (myid)
+                chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors, t)
+                html += f"var chart = new Chart(ctx, {json.dumps(chart_json)});"
+                html += '</script>'
             html += '</html>'
         # Write to writer
         writer.write(html)
     
-    def __get_chart_json_dict(self, df_data, parent_tuple, cols, border_colors, bg_colors, t="area"):
+    def __get_chart_json_dict(self, df_data, parent_tuple, cols, border_colors, bg_colors, t):
         #TODO: Better input parameter. Fix filling bg color problem with alpha.
+        #TODO: generate fills list dynamically
         if t is "line":
             chart_type = "line"
-            fill = False
+            fills = [False for _ in range(10)]
             stacked = False
-        else:
+        elif t is "area":
             chart_type = "line"
-            fill = True
+            fills = ['-1' for _ in range(10)]
+            fills.insert(0, "origin")
+            bg_colors = get_colors(1.0, 1.6)
+            #border_colors = get_colors(1.0, 0.8)
             stacked = True
+        else:
+            raise Exception(f"Unsupported chart type: {t}")
+        
         
         d = {
             "type": chart_type,
@@ -101,14 +109,14 @@ class HtmlWriter():
                         "borderColor": fg,
                         "backgroundColor": bg
                     }
-                    for col, fg, bg in zip(cols, border_colors, bg_colors)
+                    for col, fg, bg, fill in zip(cols, border_colors, bg_colors, fills)
                 ]
             },
             "options": {
                 "title": {
                     "display": True,
                     "fontSize": 20,
-                    "text": " : ".join(parent_tuple)
+                    "text": " : ".join(parent_tuple) + f" <<{t} chart>>"
                 },
                 "legend": {
                     "display": True,

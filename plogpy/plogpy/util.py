@@ -46,7 +46,7 @@ def down_sample_df(df: pd.DataFrame, max_samples=1024, round_num=2) -> pd.DataFr
     return df
 
 
-def get_colors(alpha=1.0) -> list:
+def get_colors(alpha=1.0, m=1.0) -> list:
     rgb_tuples = [
         (255, 99, 132),
         (54, 162, 235),
@@ -56,4 +56,4 @@ def get_colors(alpha=1.0) -> list:
         (255, 159, 64)
     ]
 
-    return [f'rgba({r},{g},{b},{alpha}' for r,g,b in rgb_tuples]
+    return [f'rgba({int(r*m)},{int(g*m)},{int(b*m)},{alpha})' for r,g,b in rgb_tuples]
