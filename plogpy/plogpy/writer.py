@@ -273,12 +273,3 @@ class XlsxWriter():
         chart.set_legend({
             'position': 'bottom'
         })
-
-
-    #TODO: make this usable
-    def plot_df(self, df: pd.DataFrame, name="zzz"):
-        ax = df.plot(kind='area', stacked=True, alpha=0.4)
-        fig = ax.get_figure()
-        #NOTE: eps, pdf, pgf, png, ps, raw, rgba, svg, svgz
-        fig.savefig(f'images/{name}.pdf')
-

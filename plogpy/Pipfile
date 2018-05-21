@@ -10,8 +10,8 @@ list = "python plogpy-cli list"
 [packages]
 pandas = "*"
 xlsxwriter = "*"
-matplotlib = "*"
 click = "*"
+"jinja2" = "*"
 
 [dev-packages]
 pytest = "*"
