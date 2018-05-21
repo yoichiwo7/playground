@@ -1,0 +1,39 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+</head>
+
+<body>
+    <!-- TOC -->
+    <ul>
+    {% for section in sections %}
+        <li>{{section['title']}}</li>
+    {% endfor %}
+    </ul>
+    
+{% for section in sections %}
+    <h2>{{section['title']}}</h2>
+    {{section['table']}}
+    <canvas id="line_chart_{{section['title']}}"></canvas>
+{% endfor %}
+
+</body>
+
+
+<script> 
+    var ctx = 0
+    var chart = 0
+{% for section in sections %}
+    var ctx = document.getElementById('line_chart_{{section['title']}}').getContext('2d');
+    var chart = new Chart(ctx, {{section['chart_json']}});
+{% endfor %}
+
+</script>
+
+</html>

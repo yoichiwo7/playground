@@ -50,31 +50,25 @@ class HtmlWriter():
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
 """
         myid = 100
+        sections = []
         for parent_tuple, cols in parents_leaf_dict.items():
             df_stats = df[parent_tuple].describe(percentiles=[.25, .50, .75, .90, .99]).round(2)
             df_data = df[parent_tuple]
             if max_samples:
                 df_data = down_sample_df(df_data, max_samples=max_samples)
+            section = {}
+            section["title"] = " : ".join(parent_tuple)
+            section["table"] = df_stats.to_html(col_space=10, justify="right")
+            chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors, "line")
+            section["chart_json"] = json.dumps(chart_json)
+            sections.append(section)
 
-            # table
-            html += '<body>'
-            html += f'<h2>Statistics: {" : ".join(parent_tuple)}</h2>'
-            html += df_stats.to_html(
-                col_space=10,
-                justify="right"
-            )
-
-            # chart
-            #TODO: Use application/json script tag for data separation?
-            for t in ["line", "area"]:
-                myid += 1
-                html += '<canvas id="canvas%d"></canvas> </body>' % (myid)
-                html += "<script> var ctx = document.getElementById('canvas%d').getContext('2d'); " % (myid)
-                chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors, t)
-                html += f"var chart = new Chart(ctx, {json.dumps(chart_json)});"
-                html += '</script>'
-            html += '</html>'
         # Write to writer
+        #TODO: specify path in better way(from module path)
+        from jinja2 import Environment, FileSystemLoader
+        env = Environment(loader=FileSystemLoader('./plogpy/static', encoding='utf8'))
+        tpl = env.get_template('report.j2')
+        html = tpl.render({"sections": sections})
         writer.write(html)
     
     def __get_chart_json_dict(self, df_data, parent_tuple, cols, border_colors, bg_colors, t):
