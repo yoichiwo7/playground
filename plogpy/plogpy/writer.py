@@ -1,5 +1,6 @@
 import json
 
+from jinja2 import Environment, FileSystemLoader
 import pandas as pd
 
 from .util import get_parent_leaf_headers, down_sample_df, get_colors
@@ -36,39 +37,38 @@ class HtmlWriter():
         #TODO: Use HTML template.
         parents_leaf_dict = get_parent_leaf_headers(df)
 
-        html = """
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <title>Report</title>
-</head>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
-"""
-        myid = 100
-        sections = []
-        for parent_tuple, cols in parents_leaf_dict.items():
-            df_stats = df[parent_tuple].describe(percentiles=[.25, .50, .75, .90, .99]).round(2)
+        # NOTE: make generators for less memory usage. (chart and table strings might be very large)
+        def make_table_generator(parent_tuple, cols, df):
+            df_stats = df[parent_tuple].describe(percentiles=[.25, .50, .75, .90, .99, .999]).round(2)
+            table = df_stats.to_html(col_space=10, justify="center")
+            return table
+        def make_chart_generator(parent_tuple, cols, df, chart_type):
             df_data = df[parent_tuple]
             if max_samples:
                 df_data = down_sample_df(df_data, max_samples=max_samples)
-            section = {}
-            section["title"] = " : ".join(parent_tuple)
-            section["table"] = df_stats.to_html(col_space=10, justify="right")
-            chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors, "line")
-            section["chart_json"] = json.dumps(chart_json)
-            sections.append(section)
+            chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols, border_colors, bg_colors, chart_type)
+            return json.dumps(chart_json)
+
+        titles = [" : ".join(parent_tuple)
+                        for parent_tuple in parents_leaf_dict.keys()]
+        table_gn = (make_table_generator(parent_tuple, cols, df) 
+                        for parent_tuple, cols in parents_leaf_dict.items())
+        line_chart_gn = (make_chart_generator(parent_tuple, cols, df, "line") 
+                        for parent_tuple, cols in parents_leaf_dict.items())
+        area_chart_gn = (make_chart_generator(parent_tuple, cols, df, "line") 
+                        for parent_tuple, cols in parents_leaf_dict.items())
 
         # Write to writer
         #TODO: specify path in better way(from module path)
-        from jinja2 import Environment, FileSystemLoader
         env = Environment(loader=FileSystemLoader('./plogpy/static', encoding='utf8'))
+        env.globals.update(zip=zip)
         tpl = env.get_template('report.j2')
-        html = tpl.render({"sections": sections})
+        html = tpl.render({
+            "titles": titles,
+            "tables": table_gn,
+            "line_charts": line_chart_gn,
+            "area_charts": area_chart_gn,
+        })
         writer.write(html)
     
     def __get_chart_json_dict(self, df_data, parent_tuple, cols, border_colors, bg_colors, t):

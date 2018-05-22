@@ -12,15 +12,16 @@
 <body>
     <!-- TOC -->
     <ul>
-    {% for section in sections %}
-        <li>{{section['title']}}</li>
+    {% for title in titles %}
+        <li>{{title}}</li>
     {% endfor %}
     </ul>
     
-{% for section in sections %}
-    <h2>{{section['title']}}</h2>
-    {{section['table']}}
-    <canvas id="line_chart_{{section['title']}}"></canvas>
+{% for title, table in zip(titles, tables) %}
+    <h2>{{title}}</h2>
+    {{table}}
+    <canvas id="line_chart_{{title}}"></canvas>
+    <canvas id="area_chart_{{title}}"></canvas>
 {% endfor %}
 
 </body>
@@ -31,12 +32,13 @@
     setTimeout(()=>{
         var ctx = 0
         var chart = 0
-    {% for section in sections %}
-        var ctx = document.getElementById('line_chart_{{section['title']}}').getContext('2d');
-        var chart = new Chart(ctx, {{section['chart_json']}});
+    {% for title, line_chart, area_chart in zip(titles, line_charts, area_charts) %}
+        ctx = document.getElementById('line_chart_{{title}}').getContext('2d');
+        chart = new Chart(ctx, {{line_chart}});
+        ctx = document.getElementById('area_chart_{{title}}').getContext('2d');
+        chart = new Chart(ctx, {{area_chart}});
     {% endfor %}
     }, 0);
-
 </script>
 
 </html>
