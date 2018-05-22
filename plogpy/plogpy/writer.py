@@ -55,7 +55,7 @@ class HtmlWriter():
                         for parent_tuple, cols in parents_leaf_dict.items())
         line_chart_gn = (make_chart_generator(parent_tuple, cols, df, "line") 
                         for parent_tuple, cols in parents_leaf_dict.items())
-        area_chart_gn = (make_chart_generator(parent_tuple, cols, df, "line") 
+        area_chart_gn = (make_chart_generator(parent_tuple, cols, df, "area") 
                         for parent_tuple, cols in parents_leaf_dict.items())
 
         # Write to writer
