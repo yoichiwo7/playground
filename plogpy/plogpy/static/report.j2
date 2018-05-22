@@ -27,21 +27,15 @@
 
 
 <script> 
-    // Use Promise and setTimeout for lazy javascript execution(avoid blocking HTML rendering)
-    new Promise((resolve) => {
-        setTimeout(()=>{
-            var ctx = 0
-            var chart = 0
-        {% for section in sections %}
-            var ctx = document.getElementById('line_chart_{{section['title']}}').getContext('2d');
-            var chart = new Chart(ctx, {{section['chart_json']}});
-        {% endfor %}
-        }, 0);
-    })
-    .then(() => {
-        console.log(this);
-    });
-
+    // Use setTimeout for lazy javascript execution(avoid blocking HTML rendering)
+    setTimeout(()=>{
+        var ctx = 0
+        var chart = 0
+    {% for section in sections %}
+        var ctx = document.getElementById('line_chart_{{section['title']}}').getContext('2d');
+        var chart = new Chart(ctx, {{section['chart_json']}});
+    {% endfor %}
+    }, 0);
 
 </script>
 
