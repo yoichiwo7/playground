@@ -147,8 +147,7 @@ class XlsxWriter():
             enable_data_sheet=True,
             enable_stats_sheet=True,
             enable_chart_sheet=True,
-            chart_each=False,
-            use_png=False) -> None:
+            chart_each=False) -> None:
         """
         Write data, statistics, and charts of specifed DataFrame.
 
@@ -163,8 +162,6 @@ class XlsxWriter():
         print(max_samples)
         if max_samples:
             df_data = down_sample_df(df_data, max_samples=max_samples)
-
-        #TODO: add use_png support
 
         FIXED_COL_POS = 0
         parents_leaf_dict = get_parent_leaf_headers(df_data)

@@ -43,7 +43,6 @@ def generate_excel_report(
         enable_data_sheet: bool = True,
         enable_stats_sheet: bool = True,
         enable_chart_sheet: bool = True,
-        use_png: bool = False,
         each_chart: bool = False) -> None:
     """
     Parse peformance log and generate report.
@@ -62,7 +61,6 @@ def generate_excel_report(
         enable_data_sheet=enable_data_sheet,
         enable_stats_sheet=enable_stats_sheet,
         enable_chart_sheet=enable_chart_sheet,
-        use_png=use_png,
         chart_each=each_chart)
     writer.save()
 

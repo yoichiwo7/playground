@@ -55,9 +55,6 @@ plogpy-cli report --no-chart dstat.log dstat.xlsx
 
 # Generate charts for each series
 plogpy-cli report --each dstat.log dstat.xlsx
-
-# Generate PNG image charts instead of Excel charts.
-plogpy-cli report --png dstat.log dstat.xlsx
 ```
 
 Generate a HTML report file.

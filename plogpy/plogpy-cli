@@ -16,13 +16,13 @@ g_max_sample = None
 
 @click.group()
 @click.option('--samples', help="Max data samples(rows). If exceeded, the data will be downsampled.")
-def plogpy_cmd(max_samples):
+def plogpy_cmd(samples):
     """
     CLI tool for generating excel/csv/json from performance log.
     """
-    if max_samples:
+    if samples:
         global g_max_sample
-        g_max_sample = int(max_samples)
+        g_max_sample = int(samples)
     pass
 
 
@@ -62,9 +62,8 @@ def tryit(each):
 @click.option('--data/--no-data', default=True, help="Add data sheet. (default: --data)")
 @click.option('--stats/--no-stats', default=True, help="Add statistics sheet. (default: --stats)")
 @click.option('--chart/--no-chart', default=True, help="Add Chart sheet. (default: --chart)")
-@click.option('--png', is_flag=True, help="Turn excel chart to png images.")
 @click.option('--each', is_flag=True, help="Add more charts for each series.")
-def report(in_path, out_path, recursive, data, stats, chart, png, each):
+def report(in_path, out_path, recursive, data, stats, chart, each):
     """
     Generate report file.
     Statistics and charts can be added by option.
@@ -107,7 +106,6 @@ def report(in_path, out_path, recursive, data, stats, chart, png, each):
             enable_data_sheet=data,
             enable_stats_sheet=stats,
             enable_chart_sheet=chart,
-            use_png=png,
             each_chart=each)
 
 
@@ -155,18 +153,6 @@ def to_html(in_file, out_file):
     Output HTML.
     """
     plogpy.generate_html_report(in_file, out_file, max_samples=g_max_sample)
-
-
-@plogpy_cmd.command()
-@click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
-@click.argument("out_dir", type=click.Path(exists=True, dir_okay=True, file_okay=False))
-@click.option('--format', default="png", help="Generate PNG image. (Default)")
-def image(in_file, out_dir, format):
-    """
-    Generate image files.
-    """
-    # TODO:
-    #plogpy.generate_images(in_file)
 
 
 def main():
