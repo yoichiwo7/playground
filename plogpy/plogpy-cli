@@ -149,11 +149,12 @@ def to_json(in_file, stats):
 
 @plogpy_cmd.command("html")
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
-def to_html(in_file):
+@click.argument("out_file", type=click.Path(exists=False, dir_okay=False))
+def to_html(in_file, out_file):
     """
     Output HTML.
     """
-    plogpy.generate_html_report(in_file, "report.html", max_samples=g_max_sample)
+    plogpy.generate_html_report(in_file, out_file, max_samples=g_max_sample)
 
 
 @plogpy_cmd.command()
