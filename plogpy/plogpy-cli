@@ -15,7 +15,7 @@ import plogpy
 g_max_sample = None
 
 @click.group()
-@click.option('--max-samples', help="Max data samples(rows). If exceeded, the data will be downsampled.")
+@click.option('--samples', help="Max data samples(rows). If exceeded, the data will be downsampled.")
 def plogpy_cmd(max_samples):
     """
     CLI tool for generating excel/csv/json from performance log.
