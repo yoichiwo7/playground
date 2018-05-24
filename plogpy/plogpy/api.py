@@ -61,7 +61,7 @@ def generate_excel_report(
         enable_data_sheet=enable_data_sheet,
         enable_stats_sheet=enable_stats_sheet,
         enable_chart_sheet=enable_chart_sheet,
-        chart_each=each_chart)
+        chart_each=each_chart) 
     writer.save()
 
 
@@ -74,6 +74,16 @@ def generate_html_report(
     with open(output_path, "w") as writer:
         report_writer = HtmlWriter()
         report_writer.write_df_to_html(df, writer, max_samples=max_samples)
+
+
+#TODO: Need to process as javascript too. (Currently no chartjs in Notebook)
+def show(input_path, max_samples=512):
+    empty_writer = None
+    df = parse_log(input_path)
+    report_writer = HtmlWriter()
+    from IPython.display import display, HTML
+    html_str = report_writer.write_df_to_html(df, empty_writer, max_samples=max_samples)
+    display(HTML(html_str))
 
 
 def generate_json(input_path: str, stats: bool) -> dict:

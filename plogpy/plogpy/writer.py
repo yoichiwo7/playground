@@ -30,7 +30,11 @@ class HtmlWriter():
         else:
             self.__config = writer_config
     
-    def write_df_to_html(self, df, writer, max_samples=None):
+    def write_df_to_html(self, df, writer, max_samples=None) -> str:
+        """
+        Write HTML string to writer.
+        Returns HTML string.
+        """
         border_colors = get_colors(1.0)
         bg_colors = get_colors(1.0)
 
@@ -69,7 +73,9 @@ class HtmlWriter():
             "line_charts": line_chart_gn,
             "area_charts": area_chart_gn,
         })
-        writer.write(html)
+        if writer:
+            writer.write(html)
+        return html
     
     def __get_chart_json_dict(self, df_data, parent_tuple, cols, border_colors, bg_colors, t):
         #TODO: Better input parameter. Fix filling bg color problem with alpha.

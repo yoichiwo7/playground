@@ -12,6 +12,7 @@ pandas = "*"
 xlsxwriter = "*"
 click = "*"
 "jinja2" = "*"
+ipython = "*"
 
 [dev-packages]
 pytest = "*"
