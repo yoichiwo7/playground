@@ -1,25 +1,22 @@
 > TOOD: The document is under construction. It may contain old/wrong information.
 
 
-`plogpy` is CLI/Python module for generating pandas DataFrame or Excel report file from 
+`plogpy` is Python module for generating pandas DataFrame or Excel report file from 
 peformance-related logs.
-
+It also provides CLI commands to generate report files.
 
 # Features
 
-It has following features:
-
-- Generate excel report with data, statistics, and chart sheet.
-- Generate pandas DataFrame.
-- Output as CSV/JSON.
-- Auto detects log type. (Not so smart thongh)
-- Provide CLI for generating excel report.
-
+- Generates Excel/HTML report from log file.
+- Generates pandas DataFrame from log file.
+- Option to downsample chart dataset. (Useful for large dataset)
+- Prints CSV/JSON.
+- Auto detects log type. (Far from smart thongh)
 
 # Supported Input (Log types)
 
-`plogpy` supports log types such as dstat and sar.
-You can check all supported log types by following command.
+`plogpy` supports log types such as dstat and sar log files.
+You can check all supported log types with `list` subcommand.
 
 ```bash
 # List supported log types.
@@ -32,6 +29,8 @@ The following output formats are supported.
 
   - Excel 2007
     - data sheet, stats sheet, and charts sheet are included.
+  - HTML
+    - stats tables and line/area charts are included.
   - CSV (Experimental)
   - JSON (Experimental)
 
@@ -59,6 +58,16 @@ plogpy-cli report --each dstat.log dstat.xlsx
 
 # Generate PNG image charts instead of Excel charts.
 plogpy-cli report --png dstat.log dstat.xlsx
+```
+
+Generate a HTML report file.
+
+```bash
+# Generate HTML report
+plogpy-cli html dstat.log dstat.html
+
+# Generate HTML report (downsampling chart samples to 512)
+plogpy-cli html --max-samples=512 dstat.log dstat.html
 ```
 
 See the help for more details.
@@ -97,26 +106,18 @@ You can use it for generating files too.
 ```python
 import plogpy
 
-# Generate Excel
+# Generate Excel report
 plogpy.generate_excel_report("dstat.log" "dstat.xlsx")
-
-# Generate images
-plogpy.generate_images("dstat.log" "dstat_images/")
 ```
 
 # TODO: 
 
 Major 
 
-- Manage parser/writer for each logtype.
+- Manage writer config(ex. chart type) for each logtype.
 - Support recursive mode.
-- Downsample non-time-series data
-  https://stackoverflow.com/questions/37396264/pandas-equivalent-of-resample-for-integer-index?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
 
 Minor 
 
-- PNG image charts.
 - Resample option for timestamp index DataFrame.
-- Nice HTML report with pretty charts.
-- Vega/Vega Lite support.
 - Show more information on log type. (ex. regex pattern, expected format example)
