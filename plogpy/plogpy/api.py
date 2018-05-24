@@ -89,6 +89,15 @@ def show(input_path, max_samples=512):
 def generate_json(input_path: str, stats: bool) -> dict:
     """
     Generates JSON dictionary from log file.
+    Example:
+    {
+        "index": [1,2,3,4,5],
+        "column": ["read", "write"],
+        "values": {
+            "read" : [100, 20, 30, 0, 50],
+            "write": [200, 40, 10, 5, 35]
+        }
+    }
     """
     d = {}
     df = parse_log(input_path)
