@@ -84,13 +84,13 @@ class HtmlChartjsWriter():
         if t is "line":
             chart_type = "line"
             fills = [False for _ in range(10)]
+            border_width = 2
             stacked = False
         elif t is "area":
             chart_type = "line"
             fills = ['-1' for _ in range(10)]
             fills.insert(0, "origin")
-            bg_colors = get_colors(1.0, 1.6)
-            #border_colors = get_colors(1.0, 0.8)
+            border_width = 0
             stacked = True
         else:
             raise Exception(f"Unsupported chart type: {t}")
@@ -106,7 +106,7 @@ class HtmlChartjsWriter():
                         "fill": fill,
                         "borderWidth": 2,
                         "borderColor": fg,
-                        "backgroundColor": bg
+                        "backgroundColor": fg
                     }
                     for col, fg, bg, fill in zip(cols, border_colors, bg_colors, fills)
                 ]
@@ -116,6 +116,10 @@ class HtmlChartjsWriter():
                     "display": True,
                     "fontSize": 20,
                     "text": " : ".join(parent_tuple) + f" <<{t} chart>>"
+                },
+
+                "chartArea": {
+                    "backgroundColor": 'rgba(240, 240, 240, 1)'
                 },
 
                 "legend": {

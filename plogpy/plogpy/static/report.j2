@@ -26,6 +26,20 @@
 
 </body>
 
+<script> 
+    Chart.pluginService.register({
+        beforeDraw: function(c){
+            if (c.config.options.chartArea && c.config.options.chartArea.backgroundColor) {
+                let context = c.chart.ctx;
+                let chartArea = c.chartArea;
+                context.save();
+                context.fillStyle = c.config.options.chartArea.backgroundColor;
+                context.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+                context.restore();
+            }
+        }
+    });
+</script> 
 
 <script> 
     // Use setTimeout for lazy javascript execution(avoid blocking HTML rendering)
