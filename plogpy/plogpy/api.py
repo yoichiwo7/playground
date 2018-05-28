@@ -4,7 +4,7 @@ import pandas as pd
 
 from .parser.common import get_matched_parser, get_parser, get_supported_list, NoMatchedError
 from .type import LogType
-from .writer import VegaWriter, HtmlWriter, XlsxWriter, WriterConfig
+from .writer import HtmlChartjsWriter, XlsxWriter, WriterConfig
 
 
 """
@@ -65,16 +65,18 @@ def generate_excel_report(
     writer.save()
 
 
+HTML_WRITER_DICT = {
+    "chartjs": HtmlChartjsWriter
+}
 def generate_html_report(
     input_path: str,
     output_path: str,
-    max_samples: int = None
+    max_samples: int = None,
+    html_type: str = "chartjs"
 ) -> None:
     df = parse_log(input_path)
     with open(output_path, "w") as writer:
-        #TODO: enable switch??
-        #report_writer = HtmlWriter()
-        report_writer = VegaWriter()
+        report_writer = HTML_WRITER_DICT[html_type]()
         report_writer.write_df_to_html(df, writer, max_samples=max_samples)
 
 
@@ -82,7 +84,7 @@ def generate_html_report(
 def show(input_path, max_samples=512):
     empty_writer = None
     df = parse_log(input_path)
-    report_writer = HtmlWriter()
+    report_writer = HtmlChartjsWriter()
     from IPython.display import display, HTML
     html_str = report_writer.write_df_to_html(df, empty_writer, max_samples=max_samples)
     display(HTML(html_str))

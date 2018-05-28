@@ -3,6 +3,7 @@ import json
 from jinja2 import Environment, FileSystemLoader
 import pandas as pd
 import altair as alt
+alt.data_transformers.enable('default', max_rows=None)
 
 from .util import get_parent_leaf_headers, down_sample_df, get_colors
 
@@ -23,59 +24,7 @@ class WriterConfig():
         self.chart_type_foreach = chart_type_foreach
 
 
-#TODO: Make parent class to make it DRY
-class VegaWriter():
-    def __init__(self, writer_config = None):
-        #TODO: prepare base class for Writer classes?
-        if not writer_config:
-            self.__config = WriterConfig()
-        else:
-            self.__config = writer_config
-    
-    def write_df_to_html(self, df, writer, max_samples=None) -> str:
-        """
-        Write Vega HTML string to writer.
-        Returns Vega HTML string.
-        """
-        parents_leaf_dict = get_parent_leaf_headers(df)
-
-        # NOTE: make generators for less memory usage. (chart and table strings might be very large)
-        def make_table_generator(parent_tuple, cols, df):
-            df_stats = df[parent_tuple].describe(percentiles=[.25, .50, .75, .90, .99, .999]).round(2)
-            table = df_stats.to_html(col_space=10, justify="center")
-            return table
-        def make_chart_generator(parent_tuple, cols, df, chart_type):
-            df_data = df[parent_tuple]
-            if max_samples:
-                df_data = down_sample_df(df_data, max_samples=max_samples)
-            df_data = df_data.reset_index().melt('index')
-            chart = alt.Chart(df_data).mark_line().encode(
-                x='index', y='value:Q', color='variable:N'
-            )
-            return chart.to_json()
-
-        titles = [" : ".join(parent_tuple)
-                        for parent_tuple in parents_leaf_dict.keys()]
-        ids = ['char' + ''.join(str(ord(c)) for c in title) for title in titles]
-        table_gn = (make_table_generator(parent_tuple, cols, df) 
-                        for parent_tuple, cols in parents_leaf_dict.items())
-        chart_gn = (make_chart_generator(parent_tuple, cols, df, "line") 
-                        for parent_tuple, cols in parents_leaf_dict.items())
-        env = Environment(loader=FileSystemLoader('./plogpy/static', encoding='utf8'))
-        env.globals.update(zip=zip)
-        tpl = env.get_template('altair.j2')
-        html = tpl.render({
-            "titles": titles,
-            "ids": ids,
-            "tables": table_gn,
-            "charts": chart_gn,
-        })
-        if writer:
-            writer.write(html)
-        return html
-
-
-class HtmlWriter():
+class HtmlChartjsWriter():
     def __init__(self, writer_config = None):
         #TODO: prepare base class for Writer classes?
         if not writer_config:
@@ -168,13 +117,17 @@ class HtmlWriter():
                     "fontSize": 20,
                     "text": " : ".join(parent_tuple) + f" <<{t} chart>>"
                 },
+
                 "legend": {
                     "display": True,
                 },
+                
+                # Disable animation
                 "animation": {
                     "duration": 0
                 },
                 "responsiveAnimationDuration": 0,
+
                 "elements": {
                     "line": {
                         "tension": 0, # disables bezier curves
