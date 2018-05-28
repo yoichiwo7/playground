@@ -143,6 +143,82 @@ class HtmlChartjsWriter():
         return d
 
 
+#TODO: use this or not?
+class HtmlEchartsWriter():
+    def __init__(self, writer_config = None):
+        #TODO: prepare base class for Writer classes?
+        if not writer_config:
+            self.__config = WriterConfig()
+        else:
+            self.__config = writer_config
+    
+    def write_df_to_html(self, df, writer, max_samples=None) -> str:
+        """
+        Write HTML string to writer.
+        Returns HTML string.
+        """
+        parents_leaf_dict = get_parent_leaf_headers(df)
+
+        # NOTE: make generators for less memory usage. (chart and table strings might be very large)
+        def make_table_generator(parent_tuple, cols, df):
+            df_stats = df[parent_tuple].describe(percentiles=[.25, .50, .75, .90, .99, .999]).round(2)
+            table = df_stats.to_html(col_space=10, justify="center")
+            return table
+        def make_chart_generator(parent_tuple, cols, df):
+            df_data = df[parent_tuple]
+            if max_samples:
+                df_data = down_sample_df(df_data, max_samples=max_samples)
+            chart_json = self.__get_chart_json_dict(df_data, parent_tuple, cols)
+            return json.dumps(chart_json)
+
+        titles = [" : ".join(parent_tuple)
+                        for parent_tuple in parents_leaf_dict.keys()]
+        table_gn = (make_table_generator(parent_tuple, cols, df) 
+                        for parent_tuple, cols in parents_leaf_dict.items())
+        chart_gn = (make_chart_generator(parent_tuple, cols, df) 
+                        for parent_tuple, cols in parents_leaf_dict.items())
+
+        # Write to writer
+        #TODO: specify path in better way(from module path)
+        env = Environment(loader=FileSystemLoader('./plogpy/static', encoding='utf8'))
+        env.globals.update(zip=zip)
+        tpl = env.get_template('echarts.j2')
+        html = tpl.render({
+            "titles": titles,
+            "tables": table_gn,
+            "charts": chart_gn,
+        })
+        if writer:
+            writer.write(html)
+        return html
+    
+    def __get_chart_json_dict(self, df_data, parent_tuple, cols):
+        d = {
+            "title": {
+                "text": ' '.join(parent_tuple)
+            },
+            "tooltip": {},
+            "legend": {
+                "data": cols
+            },
+            "xAxis": {
+                "data": df_data.index.tolist()
+            },
+            "yAxis": {},
+            "series": [
+                {
+                    "name": col,
+                    "type": 'line',
+                    "stack": 'stacked',
+                    "areaStyle": {"normal": {}},
+                    "data": df_data[col].values.tolist()
+                }
+                for col in cols
+            ]
+        }
+        return d
+
+
 class XlsxWriter():
     def __init__(self, writer_config = None):
         if not writer_config:

@@ -4,7 +4,7 @@ import pandas as pd
 
 from .parser.common import get_matched_parser, get_parser, get_supported_list, NoMatchedError
 from .type import LogType
-from .writer import HtmlChartjsWriter, XlsxWriter, WriterConfig
+from .writer import HtmlChartjsWriter, HtmlEchartsWriter, XlsxWriter, WriterConfig
 
 
 """
@@ -66,7 +66,8 @@ def generate_excel_report(
 
 
 HTML_WRITER_DICT = {
-    "chartjs": HtmlChartjsWriter
+    "chartjs": HtmlChartjsWriter,
+    "echarts": HtmlEchartsWriter
 }
 def generate_html_report(
     input_path: str,
