@@ -15,15 +15,13 @@ import plogpy
 g_max_sample = None
 
 @click.group()
-@click.option('--samples', help="Max data samples(rows). If exceeded, the data will be downsampled.")
+@click.option('--samples', default=512, help="Max data samples for chart. Exceeded data samples will be downsampled. Default value is 512.")
 def plogpy_cmd(samples):
     """
     CLI tool for generating excel/csv/json from performance log.
     """
-    if samples:
-        global g_max_sample
-        g_max_sample = int(samples)
-    pass
+    global g_max_sample
+    g_max_sample = int(samples)
 
 
 @plogpy_cmd.command()
@@ -152,7 +150,7 @@ def to_html(in_file, out_file):
     """
     Output HTML.
     """
-    plogpy.generate_html_report(in_file, out_file, max_samples=g_max_sample)
+    plogpy.generate_html_report(in_file, out_file, max_samples=g_max_sample, html_type="chartjs")
 
 
 def main():
