@@ -130,6 +130,11 @@ class HtmlChartjsWriter():
                 },
                 "responsiveAnimationDuration": 0,
 
+                # Disable tooltip
+                "tooltips": {
+                    "enabled": False
+                },
+
                 "elements": {
                     "line": {
                         "tension": 0, # disables bezier curves
