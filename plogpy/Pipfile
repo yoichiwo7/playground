@@ -13,8 +13,6 @@ xlsxwriter = "*"
 click = "*"
 "jinja2" = "*"
 ipython = "*"
-altair = "*"
-vega-datasets = "*"
 
 [dev-packages]
 pytest = "*"

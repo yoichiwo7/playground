@@ -9,8 +9,8 @@ It also provides CLI commands to generate report files.
 
 - Generates Excel/HTML report from log file.
 - Generates pandas DataFrame from log file.
-- Option to downsample chart dataset. (Useful for large dataset)
 - Prints CSV/JSON.
+- Option to downsample chart dataset. (Useful for large dataset)
 - Auto detects log type. (Far from smart thongh)
 
 # Supported Input (Log types)
@@ -27,12 +27,14 @@ plogpy-cli list
 
 The following output formats are supported.
 
-  - Excel 2007
+  - Excel(2007 format) file
     - data sheet, stats sheet, and charts sheet are included.
-  - HTML
+  - HTML file
     - stats tables and line/area charts are included.
-  - CSV (Experimental)
-  - JSON (Experimental)
+  - CSV
+    - Standard output only
+  - JSON
+    - Standard output only
 
 # Usage
 

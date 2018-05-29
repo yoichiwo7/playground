@@ -34,6 +34,10 @@ def get_parent_leaf_headers(df: pd.DataFrame) -> list:
 
 # TODO: currently very rough downsampling. make it better.
 def down_sample_df(df: pd.DataFrame, max_samples=1024, round_num=2) -> pd.DataFrame:
+    """
+    Downsamples rows of the specified DataFrame.
+    Useful for large dataset.
+    """
     skip_row_num = 1
     skip_row_num += int(len(df) / max_samples)
     s = (df.index.to_series() / skip_row_num).astype(int)
@@ -47,6 +51,7 @@ def down_sample_df(df: pd.DataFrame, max_samples=1024, round_num=2) -> pd.DataFr
 
 
 def get_colors(alpha=1.0, m=1.0) -> list:
+    # TODO: more colors
     rgb_tuples = [
         (255, 99, 132),
         (54, 162, 235),
@@ -55,5 +60,4 @@ def get_colors(alpha=1.0, m=1.0) -> list:
         (153, 102, 255),
         (255, 159, 64)
     ]
-
     return [f'rgba({int(r*m)},{int(g*m)},{int(b*m)},{alpha})' for r,g,b in rgb_tuples]

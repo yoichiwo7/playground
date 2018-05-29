@@ -2,8 +2,6 @@ import json
 
 from jinja2 import Environment, FileSystemLoader
 import pandas as pd
-import altair as alt
-alt.data_transformers.enable('default', max_rows=None)
 
 from .util import get_parent_leaf_headers, down_sample_df, get_colors
 
@@ -104,9 +102,9 @@ class HtmlChartjsWriter():
                         "data": df_data[col].values.tolist(),
                         "radius": 0,
                         "fill": fill,
-                        "borderWidth": 2,
+                        "borderWidth": border_width,
                         "borderColor": fg,
-                        "backgroundColor": fg
+                        "backgroundColor": bg
                     }
                     for col, fg, bg, fill in zip(cols, border_colors, bg_colors, fills)
                 ]
