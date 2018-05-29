@@ -1,6 +1,111 @@
 <html>
 
 <head>
+    <style type="text/css">
+
+    table {
+        margin: 1em 0;
+        width: 100%;
+        overflow: hidden;
+        background: #FFF;
+        color: #024457;
+        border-radius: 10px;
+        border: 1px solid #167F92;
+    }
+
+    tr {
+        border: 1px solid #D9E4E6;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #EAF3F3;
+    }
+
+    th {
+        display: none;
+        border: 1px solid #FFF;
+        background-color: #167F92;
+        color: #FFF;
+        padding: 1em;
+    }
+
+    th:first-child {
+        display: table-cell;
+        text-align: center;
+    }
+
+    th:nth-child(2) {
+        display: table-cell;
+    }
+
+    th:nth-child(2) span {
+        display: none;
+    }
+
+    th:nth-child(2):after {
+        content: attr(data-th);
+    }
+
+    @media (min-width: 480px) {
+        th:nth-child(2) span {
+            display: block;
+        }
+        th:nth-child(2):after {
+            display: none;
+        }
+    }
+
+    td {
+        display: block;
+        word-wrap: break-word;
+        max-width: 7em;
+    }
+
+    td:first-child {
+        display: table-cell;
+        text-align: center;
+        border-right: 1px solid #D9E4E6;
+    }
+
+    @media (min-width: 480px) {
+        td {
+            border: 1px solid #D9E4E6;
+        }
+    }
+
+    th,
+    td {
+        text-align: left;
+        margin: .5em 1em;
+    }
+
+    @media (min-width: 480px) {
+        th,
+        td {
+            display: table-cell;
+            padding: 1em;
+        }
+    }
+
+    body {
+        padding: 0 2em;
+        font-family: Arial, sans-serif;
+        color: #024457;
+        background: #f2f2f2;
+    }
+
+    h1 {
+        font-family: Verdana;
+        font-weight: normal;
+        color: #024457;
+    }
+
+    h1 span {
+        color: #167F92;
+    }
+
+    </style>
+
     <meta charset="utf-8">
     <title>Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/1.11.8/semantic.min.css" />
@@ -11,14 +116,15 @@
 
 <body>
     <!-- TOC -->
-    <ul>
+    <ul id="top">
     {% for title in titles %}
-        <li>{{title}}</li>
+        <li><a href="#{{title.replace(" ", "-")}}">{{title}}</a></li>
     {% endfor %}
     </ul>
     
 {% for title, table in zip(titles, tables) %}
-    <h2>{{title}}</h2>
+    <h2 id={{title.replace(" ", "-")}}>{{title}}</h2>
+    <div><a href="#top">TOP</a></div>
     {{table}}
     <canvas id="line_chart_{{title}}"></canvas>
     <canvas id="area_chart_{{title}}"></canvas>
