@@ -46,10 +46,15 @@ def tryit(each):
     
     for log, report in zip(logs, reports):
         print(f"- Parsing - {log}")
-        plogpy.generate_excel_report(log, report, 
-            each_chart=each,
-            max_samples=g_max_sample
-        )
+        if True:
+            plogpy.generate_excel_report(log, report, 
+                each_chart=each,
+                max_samples=g_max_sample
+            )
+        else:
+            plogpy.generate_html_report(log, report, 
+                max_samples=g_max_sample
+            )
 
 #TODO: add report type -> ["xlsx", "html"]
 
