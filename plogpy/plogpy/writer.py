@@ -10,8 +10,8 @@ from .util import get_parent_leaf_headers, down_sample_df, get_colors
 
 class WriterConfig():
     def __init__(self,
-        chart_width_ratio = 1.0,
-        chart_height_ratio = 1.0,
+        chart_width_ratio = 1.5,
+        chart_height_ratio = 1.5,
         #TODO: make types more generic.
         chart_types = [("line", "unstacked"), ("area", "stacked")],
         chart_type_foreach = ("scatter", "")
@@ -247,12 +247,12 @@ class XlsxWriter():
         chart_each : add chart for each series (ex. usr, sys, wait)
         """
 
-        df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
         df_data = df
-
-        print(max_samples)
+        df_stats = df.describe(percentiles=[.25, .50, .75, .90, .99])
         if max_samples:
-            df_data = down_sample_df(df_data, max_samples=max_samples)
+            df_sampled_data = down_sample_df(df_data, max_samples=max_samples)
+        else:
+            df_sampled_data = df_data
 
         FIXED_COL_POS = 0
         parents_leaf_dict = get_parent_leaf_headers(df_data)
@@ -261,7 +261,7 @@ class XlsxWriter():
         if parents_num > 0:
             row_start_pos += parents_num
             row_start_pos += 1 # a blank row will be added at multi-index
-        row_end_pos = row_start_pos + len(df_data)
+        row_end_pos = row_start_pos + len(df_sampled_data)
 
         #TODO: adjust column width for DATA/STATS sheets.
         ## add DATA
@@ -277,7 +277,10 @@ class XlsxWriter():
 
         ## add CHART
         if enable_chart_sheet:
-            self.__add_chart_sheet(writer, parents_leaf_dict, sheet_name_data, name,
+            sheet_name_sampled_data = f'{name}_DS'
+            df_sampled_data.to_excel(writer, sheet_name_sampled_data,
+                float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
+            self.__add_chart_sheet(writer, parents_leaf_dict, sheet_name_sampled_data, name,
                 parents_num, row_start_pos, row_end_pos, chart_each=chart_each)
 
 
@@ -285,6 +288,7 @@ class XlsxWriter():
         sheet_name_chart = f'{name}_CHART'
         wb = writer.book
         ws = wb.add_worksheet(sheet_name_chart)
+        wb.get_worksheet_by_name(sheet_name_data).hide()
         chart_pos = 1
         chart_height = int(18 * self.__config.chart_height_ratio)
 
