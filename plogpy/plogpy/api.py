@@ -40,9 +40,6 @@ def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> pd
 def generate_excel_report(
         input_path: str, output_path: str,
         max_samples: int = None,
-        enable_data_sheet: bool = True,
-        enable_stats_sheet: bool = True,
-        enable_chart_sheet: bool = True,
         each_chart: bool = False) -> None:
     """
     Parse peformance log and generate report.
@@ -58,9 +55,6 @@ def generate_excel_report(
     )
     report_writer.write_df_to_excel(writer, df, name, 
         max_samples=max_samples,
-        enable_data_sheet=enable_data_sheet,
-        enable_stats_sheet=enable_stats_sheet,
-        enable_chart_sheet=enable_chart_sheet,
         chart_each=each_chart) 
     writer.save()
 

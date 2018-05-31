@@ -62,11 +62,8 @@ def tryit(each):
 @click.argument("in_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("out_path", type=click.Path(exists=False, dir_okay=True))
 @click.option('--recursive', is_flag=True, help="Check log directory recursively.")
-@click.option('--data/--no-data', default=True, help="Add data sheet. (default: --data)")
-@click.option('--stats/--no-stats', default=True, help="Add statistics sheet. (default: --stats)")
-@click.option('--chart/--no-chart', default=True, help="Add Chart sheet. (default: --chart)")
 @click.option('--each', is_flag=True, help="Add more charts for each series.")
-def report(in_path, out_path, recursive, data, stats, chart, each):
+def report(in_path, out_path, recursive, each):
     """
     Generate report file.
     Statistics and charts can be added by option.
@@ -106,9 +103,6 @@ def report(in_path, out_path, recursive, data, stats, chart, each):
         #TODO: support multiprocessing
         plogpy.generate_excel_report(ipath, opath,
             max_samples=g_max_sample,
-            enable_data_sheet=data,
-            enable_stats_sheet=stats,
-            enable_chart_sheet=chart,
             each_chart=each)
 
 

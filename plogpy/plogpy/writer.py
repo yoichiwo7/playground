@@ -235,9 +235,6 @@ class XlsxWriter():
 
     def write_df_to_excel(self, writer, df: pd.DataFrame, name, index=True,
             max_samples=None,
-            enable_data_sheet=True,
-            enable_stats_sheet=True,
-            enable_chart_sheet=True,
             chart_each=False) -> None:
         """
         Write data, statistics, and charts of specifed DataFrame.
@@ -265,23 +262,20 @@ class XlsxWriter():
 
         #TODO: adjust column width for DATA/STATS sheets.
         ## add DATA
-        if enable_data_sheet:
-            sheet_name_data = f'{name}_DATA'
-            df_data.to_excel(writer, sheet_name_data,
-                float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
+        sheet_name_data = f'{name}_DATA'
+        df_data.to_excel(writer, sheet_name_data,
+            float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
 
         ## add STAT
-        if enable_stats_sheet:
-            sheet_name_stats = f'{name}_STATS'
-            df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
+        sheet_name_stats = f'{name}_STATS'
+        df_stats.to_excel(writer, sheet_name_stats, float_format='%.2f', index=index)
 
         ## add CHART
-        if enable_chart_sheet:
-            sheet_name_sampled_data = f'{name}_DS'
-            df_sampled_data.to_excel(writer, sheet_name_sampled_data,
-                float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
-            self.__add_chart_sheet(writer, parents_leaf_dict, sheet_name_sampled_data, name,
-                parents_num, row_start_pos, row_end_pos, chart_each=chart_each)
+        sheet_name_sampled_data = f'{name}_DS'
+        df_sampled_data.to_excel(writer, sheet_name_sampled_data,
+            float_format='%.2f', index=index, freeze_panes=(row_start_pos, FIXED_COL_POS))
+        self.__add_chart_sheet(writer, parents_leaf_dict, sheet_name_sampled_data, name,
+            parents_num, row_start_pos, row_end_pos, chart_each=chart_each)
 
 
     def __add_chart_sheet(self, writer, parents_leaf_dict, sheet_name_data, name, parents_num, row_start_pos, row_end_pos, chart_each=False):
@@ -309,7 +303,7 @@ class XlsxWriter():
                 if len(parents) == 0:
                     parents = (name,)
                 chart.set_title({
-                    'name': f'{"::".join(parents)} - {subtype.capitalize()}'
+                    'name': f'{"::".join(parents)}  <{t.capitalize()} Chart>'
                 })
                 self.__set_nice_chart(chart)
                 for _ in leafs:
