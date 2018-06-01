@@ -1,6 +1,7 @@
 .vscode/
+.ipynb_checkpoints/
 .cache/
 __cache__/
 build/
+report_sample/
 *.pyc
-**/*.xlsx
