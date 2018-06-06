@@ -3,7 +3,6 @@ import {Bar} from 'react-chartjs-2';
 import * as React from 'react';
 import * as ReactMarkdown from 'react-markdown';
 import axios from 'axios';
-//const Spinner = require('react-spinkit')
 import * as Spinner from 'react-spinkit'
 
 
@@ -20,6 +19,10 @@ class GithubRepo {
 type MyState = {
   markdown: string,
   counter: number,
+  url: string,
+  token: string,
+  topN: number,
+  completed: boolean,
   maxCounter: number,
   topRepos: GithubRepo[],
   chartData: any
@@ -30,8 +33,12 @@ class App extends React.Component<{}, MyState> {
   constructor(props: any) {
     super(props);
     this.state = {
-      markdown: "# Empty",
+      markdown: "**Awesome repository page with start will be displayed here**",
       counter: 0,
+      url: 'https://github.com/vinta/awesome-python',
+      token: '',
+      topN: 10,
+      completed: false,
       maxCounter: 0,
       topRepos: [],
       chartData: {
@@ -47,7 +54,7 @@ class App extends React.Component<{}, MyState> {
   }
 
   getGithub = async () => {
-    const url = 'https://github.com/vinta/awesome-python';
+    const url = this.state.url
     let repos: GithubRepo[] = [];
     let chartdata: any = [];
     let counter = 0;
@@ -56,7 +63,7 @@ class App extends React.Component<{}, MyState> {
     const axiosConf = {
       headers: {
         // You need to replace XXXX to your token string for Github
-        Authorization: 'token XXXX'
+        Authorization: `token ${this.state.token}`
       }
     }
     const urlPattern = /^https:\/\/github.com\/(.+?)\/(.+?)\/?$/;
@@ -96,12 +103,6 @@ class App extends React.Component<{}, MyState> {
     maxCounter = repos.length;
     this.setState({maxCounter: maxCounter})
 
-    repos[0].star = 1000;
-    repos[1].star = 100;
-    repos[2].star = 500;
-    repos[3].star = 0;
-    repos[4].star = 200;
-
     chartdata = repos.map((e) => [e.repo, e.star]);
     chartdata.length = 5;
 
@@ -132,7 +133,8 @@ class App extends React.Component<{}, MyState> {
       }
       return 0;
     })
-    const topRepos = repos.slice(0, 5);
+
+    const topRepos = repos.slice(0, this.state.topN);
     this.setState({
       topRepos: topRepos,
       chartData: {
@@ -152,7 +154,10 @@ class App extends React.Component<{}, MyState> {
         `[${entry.description}]`,
         `[${entry.description} **:-:-:${entry.star}:-:-:**]`);
     });
-    this.setState({markdown: markdownData})
+    this.setState({
+      markdown: markdownData,
+      completed: true
+    })
   }
 
   public render() {
@@ -160,32 +165,50 @@ class App extends React.Component<{}, MyState> {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Awesome Star (for Github awesome repos)</h1>
         </header>
 
         {/* Input Part */}
-        <div>Markdown Entry</div>
-        <hr/>
+        <div>Please Enter Github awesome repo URL and Github token</div>
+        <div> URL: 
+          <input type="text" value={this.state.url} size={80} name="url" id=""
+          onChange={((e) => { this.setState({url: e.target.value}); })} />
+        </div>
+        <div> Token: 
+          <input type="text" value={this.state.token} size={80} name="url" id=""
+          onChange={((e) => { this.setState({token: e.target.value}); })} />
+        </div>
+        <div> Top List number: 
+          <input type="text" value={this.state.topN} name="topn" id=""
+          onChange={((e) => { this.setState({topN: Number(e.target.value)}); })} />
+        </div>
         <input type="button" value="GET" onClick={this.getGithub} />
-        <div>Current: {this.state.counter}/{this.state.maxCounter}</div>
+        <div>Retrieved Repos: {this.state.counter}/{this.state.maxCounter}</div>
 
-        {/* Top N repositories list Part */}
-        {this.state.topRepos.map((elem, index) => {
-          return <h3 key={index}>... No.{index+1} : {elem.repo} ({elem.star} stars)</h3>;
-        })}
-
-
-        {/* Chart Part */}
-        <Bar data={this.state.chartData} />
 
         {/* Spinner Part */}
         {
           this.state.counter != this.state.maxCounter
             ? <Spinner name="ball-beat" />
-            : <div></div>
+            : <div>Not yet...</div>
+        }
+
+        {/* Top N repositories list Part */}
+        <h2>Top {this.state.topN} List</h2>
+        {this.state.topRepos.map((elem, index) => {
+          return <h5 key={index}>... No.{index+1} : {elem.repo} ({elem.star} stars)</h5>;
+        })}
+
+        {/* Chart Part */}
+        <h2>Top 5 Bar Chart</h2>
+        {
+          this.state.completed
+            ? <Bar data={this.state.chartData} />
+            : <div>Not yet...</div>
         }
 
         {/* Markdown Part */}
+        <hr/>
         <ReactMarkdown 
           source={this.state.markdown}
           escapeHtml={false}
