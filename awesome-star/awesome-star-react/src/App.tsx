@@ -56,6 +56,7 @@ class App extends React.Component<{}, MyState> {
   getGithub = async () => {
     const url = this.state.url
     let repos: GithubRepo[] = [];
+    let repoKeys = new Set();
     let chartdata: any = [];
     let counter = 0;
     let maxCounter = 0;
@@ -98,7 +99,10 @@ class App extends React.Component<{}, MyState> {
       repoInfo.user = starUser;
       repoInfo.repo = starRepo;
       repoInfo.url = urlMatch[0];
-      repos.push(repoInfo);
+      if (!repoKeys.has(`${starUser}/${starRepo}`)) {
+        repos.push(repoInfo);
+      }
+      repoKeys.add(`${starUser}/${starRepo}`)
     }
     maxCounter = repos.length;
     this.setState({maxCounter: maxCounter})
@@ -118,6 +122,8 @@ class App extends React.Component<{}, MyState> {
       })
       .catch((r) => {
         console.log(r);
+        counter++;
+        this.setState({ counter: counter })
       });
       jobs.push(job);
     });
