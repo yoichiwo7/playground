@@ -30,26 +30,25 @@ type MyState = {
 
 class App extends React.Component<{}, MyState> {
 
+  chartOptions = {
+      scales: {
+        yAxes: [{ ticks: { beginAtZero: true } } ]
+      }
+  }
+
+
   constructor(props: any) {
     super(props);
     this.state = {
       markdown: "**Awesome repository page with start will be displayed here**",
       counter: 0,
-      url: 'https://github.com/vinta/awesome-python',
+      url: 'https://github.com/akrawchyk/awesome-vim',
       token: '',
       topN: 10,
       completed: false,
       maxCounter: 0,
       topRepos: [],
-      chartData: {
-        datasets: [
-          {
-            data: [1, 2, 3, 6, 2],
-            label: "Star",
-          }
-        ],
-        labels: ['a', 'b', 'c', 'd', 'e'],
-      }
+      chartData: {}
     };
   }
 
@@ -144,13 +143,16 @@ class App extends React.Component<{}, MyState> {
     this.setState({
       topRepos: topRepos,
       chartData: {
+        labels: topRepos.map((e) => e.repo),
         datasets: [
           {
             data: topRepos.map((e) => e.star),
             label: "Star",
+            borderWidth: 4,
+            borderColor: 'rgba(132, 99, 255, 1.0)',
+            backgroundColor: 'rgba(132, 99, 255, 0.4)',
           }
         ],
-        labels: topRepos.map((e) => e.repo)
       }
     });
 
@@ -209,7 +211,7 @@ class App extends React.Component<{}, MyState> {
         <h2>Top 5 Bar Chart</h2>
         {
           this.state.completed
-            ? <Bar data={this.state.chartData} />
+            ? <Bar data={this.state.chartData} options={this.chartOptions} />
             : <div>Not yet...</div>
         }
 
