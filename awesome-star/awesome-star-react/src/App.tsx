@@ -1,171 +1,105 @@
 import './App.css';
-import {Bar} from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import * as React from 'react';
 import * as ReactMarkdown from 'react-markdown';
-import axios from 'axios';
 import * as Spinner from 'react-spinkit'
-
+import GithubInput from './component/GithubInput'
+import {GithubRepo} from './component/GithubInput'
 
 import logo from './logo.svg';
-
-class GithubRepo {
-  description = "";
-  url = "";
-  user = "";
-  repo = "";
-  star = 0;
-}
+import { url } from 'inspector';
 
 type MyState = {
-  markdown: string,
-  counter: number,
   url: string,
   token: string,
-  topN: number,
-  completed: boolean,
+  counter: number,
   maxCounter: number,
-  topRepos: GithubRepo[],
-  chartData: any
+  repos: GithubRepo[],
+  topN: number,
+  markdown: string,
 }
 
 class App extends React.Component<{}, MyState> {
 
   chartOptions = {
-      scales: {
-        yAxes: [{ ticks: { beginAtZero: true } } ]
-      }
+    scales: {
+      yAxes: [{ ticks: { beginAtZero: true } }]
+    }
   }
-
 
   constructor(props: any) {
     super(props);
     this.state = {
-      markdown: "**Awesome repository page with start will be displayed here**",
+      url: "https://github.com/akrawchyk/awesome-vim",
+      token: "",
       counter: 0,
-      url: 'https://github.com/akrawchyk/awesome-vim',
-      token: '',
-      topN: 10,
-      completed: false,
       maxCounter: 0,
-      topRepos: [],
-      chartData: {}
+      repos: [],
+      topN: 5,
+      markdown: "**Awesome repository page with start will be displayed here**",
     };
   }
 
-  getGithub = async () => {
-    const url = this.state.url
-    let repos: GithubRepo[] = [];
-    let repoKeys = new Set();
-    let chartdata: any = [];
-    let counter = 0;
-    let maxCounter = 0;
-
-    const axiosConf = {
-      headers: {
-        // You need to replace XXXX to your token string for Github
-        Authorization: `token ${this.state.token}`
-      }
-    }
-    const urlPattern = /^https:\/\/github.com\/(.+?)\/(.+?)\/?$/;
-    const match = url.match(urlPattern);
-    if (match == null) {
-      return;
-    }
-    const user = match[1];
-    const repo = match[2];
-    const res = await axios.get(`https://api.github.com/repos/${user}/${repo}/readme`, axiosConf);
-    const resReadme = await axios.get(res.data.download_url);
-
-    const mdLinkPattern = /\[(.*?)\]\s*\((.*?)\)/g;
-    let i = 0;
-    while (true) {
-      i++;
-      let mdMatch = mdLinkPattern.exec(resReadme.data);
-      if (mdMatch === null || mdMatch.length === 0) {
-        // No more URL found
-        break;
-      }
-      const [desc, url] = [mdMatch[1], mdMatch[2]];
-      let urlMatch = url.match(urlPattern);
-      if (urlMatch == null) {
-        // Not Github repository URL
-        continue;
-      }
-      const starUser = urlMatch[1];
-      const starRepo = urlMatch[2].replace(/\/.*$/, '');
-      const repoInfo = new GithubRepo();
-      repoInfo.description = desc;
-      repoInfo.user = starUser;
-      repoInfo.repo = starRepo;
-      repoInfo.url = urlMatch[0];
-      if (!repoKeys.has(`${starUser}/${starRepo}`)) {
-        repos.push(repoInfo);
-      }
-      repoKeys.add(`${starUser}/${starRepo}`)
-    }
-    maxCounter = repos.length;
-    this.setState({maxCounter: maxCounter})
-
-    chartdata = repos.map((e) => [e.repo, e.star]);
-    chartdata.length = 5;
-
-
-    const jobs: any[] = [];
-    repos.forEach((entry) => {
-      const job = axios.get(`https://api.github.com/repos/${entry.user}/${entry.repo}`, axiosConf)
-      .then((res) => {
-        entry.star = res.data.stargazers_count;
-        console.log(`${entry.description}, ${entry.user}, ${entry.repo}, **${entry.star}**`);
-        counter++;
-        this.setState({ counter: counter })
-      })
-      .catch((r) => {
-        console.log(r);
-        counter++;
-        this.setState({ counter: counter })
-      });
-      jobs.push(job);
-    });
-    // wait all
-    await axios.all(jobs);
-
-    repos.sort((a,b) => {
-      if (a.star > b.star) {
-        return -1;
-      }
-      if (a.star < b.star) {
-        return 1;
-      }
-      return 0;
-    })
-
-    const topRepos = repos.slice(0, this.state.topN);
+  onUpdated = (current: number, max: number) => {
     this.setState({
-      topRepos: topRepos,
-      chartData: {
-        labels: topRepos.map((e) => e.repo),
-        datasets: [
-          {
-            data: topRepos.map((e) => e.star),
-            label: "Star",
-            borderWidth: 4,
-            borderColor: 'rgba(132, 99, 255, 1.0)',
-            backgroundColor: 'rgba(132, 99, 255, 0.4)',
-          }
-        ],
-      }
-    });
+      counter: current,
+      maxCounter: max
+    })
+  }
 
-    let markdownData: string = resReadme.data;
+  onCompleted = (awesomeReadme: string, updatedRepos: GithubRepo[], topN: number) => {
+    const staredMarkdown = this.getStaredMarkdown(awesomeReadme, updatedRepos);
+    this.setState({
+      topN: topN,
+      repos: updatedRepos,
+      markdown: staredMarkdown
+    })
+  }
+
+  onUrlChange = (e: any) => {
+    this.setState({
+      url: e.target.value
+    })
+  }
+
+  onTokenChange = (e: any) => {
+    this.setState({
+      token: e.target.value
+    })
+  }
+
+  onTopnChange = (e: any) => {
+    this.setState({
+      topN: Number(e.target.value)
+    })
+  }
+
+  getStaredMarkdown = (readme: string, repos: GithubRepo[]) => {
+    let markdownData: string = readme;
     repos.forEach((entry) => {
+      const starStr = "★".repeat(Math.min((entry.star / 1000) + 1, 5))
+      // TODO: make the string manipulation more efficient
       markdownData = markdownData.replace(
         `[${entry.description}]`,
-        `[${entry.description} **:-:-:${entry.star}:-:-:**]`);
+        `[${entry.description}  **${starStr}${entry.star}**]`);
     });
-    this.setState({
-      markdown: markdownData,
-      completed: true
-    })
+    return markdownData;
+  }
+
+  getChartData = () => {
+    const topRepos = this.state.repos.slice(0, this.state.topN)
+    return {
+      labels: topRepos.map((e) => e.repo),
+      datasets: [
+        {
+          data: topRepos.map((e) => e.star),
+          label: "Star",
+          borderWidth: 4,
+          borderColor: 'rgba(132, 99, 255, 1.0)',
+          backgroundColor: 'rgba(132, 99, 255, 0.4)',
+        }
+      ],
+    }
   }
 
   public render() {
@@ -173,53 +107,46 @@ class App extends React.Component<{}, MyState> {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Awesome Star (for Github awesome repos)</h1>
+          <h1 className="App-title">Awesome Star [ version=0.0.1 ]</h1>
         </header>
 
-        {/* Input Part */}
-        <div>Please Enter Github awesome repo URL and Github token</div>
-        <div> URL: 
-          <input type="text" value={this.state.url} size={80} name="url" id=""
-          onChange={((e) => { this.setState({url: e.target.value}); })} />
-        </div>
-        <div> Token: 
-          <input type="text" value={this.state.token} size={80} name="url" id=""
-          onChange={((e) => { this.setState({token: e.target.value}); })} />
-        </div>
-        <div> Top List number: 
-          <input type="text" value={this.state.topN} name="topn" id=""
-          onChange={((e) => { this.setState({topN: Number(e.target.value)}); })} />
-        </div>
-        <input type="button" value="GET" onClick={this.getGithub} />
-        <div>Retrieved Repos: {this.state.counter}/{this.state.maxCounter}</div>
+        <GithubInput 
+          url={this.state.url}
+          token={this.state.token}
+          topRepoNum={this.state.topN}
+          showHelp={true}
+          onUrlChange={this.onUrlChange}
+          onTokenChange={this.onTokenChange}
+          onTopnChange={this.onTopnChange}
+          onUpdated={this.onUpdated}
+          onCompleted={this.onCompleted}
+        />
 
 
+        { this.state.maxCounter > 0
+          && <div>[Current/Max] :  {this.state.counter}/{this.state.maxCounter}</div>}
         {/* Spinner Part */}
-        {
-          this.state.counter != this.state.maxCounter
-            ? <Spinner name="ball-beat" />
-            : <div>Not yet...</div>
+        {this.state.counter != this.state.maxCounter
+          ? <Spinner name="ball-beat" />
+          : <div></div>
         }
 
         {/* Top N repositories list Part */}
-        <h2>Top {this.state.topN} List</h2>
-        {this.state.topRepos.map((elem, index) => {
-          return <h5 key={index}>... No.{index+1} : {elem.repo} ({elem.star} stars)</h5>;
-        })}
+        {this.state.repos.length > 0 
+          && <h2>Top {this.state.topN} List</h2>}
+        {this.state.repos.slice(0, this.state.topN).map((elem, index) => 
+            <h5 key={index}>... No.{index + 1} : {elem.repo} ({elem.star} stars)</h5>
+        )}
 
         {/* Chart Part */}
-        <h2>Top 5 Bar Chart</h2>
-        {
-          this.state.completed
-            ? <Bar data={this.state.chartData} options={this.chartOptions} />
-            : <div>Not yet...</div>
+        {this.state.repos.length > 0
+          && <h2>Top {this.state.topN} Chart</h2>}
+        {this.state.repos.length > 0
+          && <Bar data={this.getChartData()} options={this.chartOptions} />
         }
 
-        {/* Markdown Part */}
-        <hr/>
-        <ReactMarkdown 
-          source={this.state.markdown}
-          escapeHtml={false}
+        <ReactMarkdown
+          source={this.state.markdown} escapeHtml={false} skipHtml={false}
         />
       </div>
     );
