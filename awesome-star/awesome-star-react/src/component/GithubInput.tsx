@@ -10,6 +10,8 @@ class GithubRepo {
   user = "";
   repo = "";
   star = -1;
+  lastUpdated = "";
+  license = "";
 }
 
 interface Props {
@@ -119,6 +121,8 @@ class GithubInput extends React.Component<Props, MyState> {
       const job = axios.get(`https://api.github.com/repos/${entry.user}/${entry.repo}`, this.getAxiosConf())
         .then((res) => {
           entry.star = res.data.stargazers_count;
+          entry.lastUpdated = res.data.updated_at;
+          entry.license = res.data.license.key;
           console.log(`${entry.description}, ${entry.user}, ${entry.repo}, **${entry.star}**`);
           this.setState({counter: ++counter});
         })

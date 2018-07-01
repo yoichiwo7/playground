@@ -41,32 +41,51 @@ class GithubTopResult extends React.PureComponent<Props> {
       return {
         rank: idx + 1,
         name: elem.repo,
-        star: elem.star
+        star: elem.star,
+        license: elem.license,
+        updated: elem.lastUpdated
       };
     });
 
     return (
       <div>
-        {/* Top N repositories list Part */}
-        {this.props.repos.length > 0 && <h2>Top {this.props.topN} List</h2>}
-        {this.props.repos.length > 0 && (
-          <Griddle data={data}>
-            <RowDefinition>
-              <ColumnDefinition id="rank" />
-              <ColumnDefinition id="name" />
-              <ColumnDefinition id="star" />
-            </RowDefinition>
-          </Griddle>
-        )}
-
-        {/* Chart Part */}
-        {this.props.repos.length > 0 && <h2>Top {this.props.topN} Chart</h2>}
-        {this.props.repos.length > 0 && (
-          <Bar data={this.getChartData()} options={this.chartOptions} />
-        )}
+        {this.getTableJsx(data)}
+        {this.getChartJsx()}
       </div>
     );
   }
+
+  private getTableJsx = (data: object[]): React.ReactNode => {
+    if (this.props.repos.length <= 0) {
+      return;
+    }
+    return (
+      <div>
+        <h2>Top {this.props.topN} List</h2>
+        <Griddle data={data}>
+          <RowDefinition>
+            <ColumnDefinition id="rank" />
+            <ColumnDefinition id="name" />
+            <ColumnDefinition id="star" />
+            <ColumnDefinition id="license" />
+            <ColumnDefinition id="updated" />
+          </RowDefinition>
+        </Griddle>
+      </div>
+    );
+  };
+
+  private getChartJsx = (): React.ReactNode => {
+    if (this.props.repos.length <= 0) {
+      return;
+    }
+    return (
+      <div>
+        <h2>Top {this.props.topN} Chart</h2>
+        <Bar data={this.getChartData()} options={this.chartOptions} />
+      </div>
+    );
+  };
 }
 
 export default GithubTopResult;
