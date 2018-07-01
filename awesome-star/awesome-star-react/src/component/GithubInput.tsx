@@ -2,6 +2,7 @@ import * as React from "react";
 import axios from 'axios';
 import * as http from 'http';
 import * as https from 'https';
+import * as Spinner from 'react-spinkit'
 
 class GithubRepo {
   description = "";
@@ -17,18 +18,27 @@ interface Props {
     topRepoNum: number,
     showHelp: boolean,
     onCompleted: any,
-    onUpdated: any,
     onUrlChange: any,
     onTokenChange: any,
     onTopnChange: any,
 }
 
-class GithubInput extends React.Component<Props, {}> {
+type MyState = {
+  counter: number,
+  maxCounter: number
+}
+
+class GithubInput extends React.Component<Props, MyState> {
   GITHUB_URL_PATTERN = /^https:\/\/github.com\/(.+?)\/(.+?)\/?$/;
   MARKDOWN_LINK_PATTERN = /\[(.*?)\]\s*\((.*?)\)/g;
 
   constructor(props: Props) {
     super(props);
+
+    this.state = {
+      counter: 0,
+      maxCounter: 0
+    }
   }
 
   getGithub = async () => {
@@ -62,12 +72,11 @@ class GithubInput extends React.Component<Props, {}> {
     const res = await axios.get(`https://api.github.com/repos/${user}/${repo}/readme`, this.getAxiosConf());
     const resReadme = await axios.get(res.data.download_url);
     return resReadme.data;
-  }    // maxCounter = repos.length;
-  // this.setState({ maxCounter: maxCounter })
+  }
 
   getTargetRepos = async (readme: string) => {
     const repos: GithubRepo[] = []
-    const repoKeys = new Set()
+    const repoSet = new Set()
 
     let i = 0;
     while (true) {
@@ -91,12 +100,15 @@ class GithubInput extends React.Component<Props, {}> {
       repoInfo.description = desc;
       repoInfo.user = starUser;
       repoInfo.repo = starRepo;
-      if (!repoKeys.has(`${starUser}/${starRepo}`)) {
+      if (!repoSet.has(`${starUser}/${starRepo}`)) {
         repos.push(repoInfo);
       }
-      repoKeys.add(`${starUser}/${starRepo}`);
+      repoSet.add(`${starUser}/${starRepo}`);
     }
-    this.props.onUpdated(0, repos.length)
+    this.setState({
+      counter: 0,
+      maxCounter: repos.length
+    });
     return repos;
   }
 
@@ -107,14 +119,12 @@ class GithubInput extends React.Component<Props, {}> {
       const job = axios.get(`https://api.github.com/repos/${entry.user}/${entry.repo}`, this.getAxiosConf())
         .then((res) => {
           entry.star = res.data.stargazers_count;
-          counter++;
           console.log(`${entry.description}, ${entry.user}, ${entry.repo}, **${entry.star}**`);
-          this.props.onUpdated(counter, repos.length)
+          this.setState({counter: ++counter});
         })
         .catch((r) => {
           console.log(r);
-          counter++;
-          this.props.onUpdated(counter, repos.length)
+          this.setState({counter: ++counter});
         });
       jobs.push(job);
     });
@@ -166,6 +176,15 @@ class GithubInput extends React.Component<Props, {}> {
           />
         </div>
         <input type="button" value="GET" onClick={this.getGithub} />
+
+        { this.state.maxCounter > 0
+          && <div>[Current/Max] :  {this.state.counter}/{this.state.maxCounter}</div>}
+        {/* Spinner Part */}
+        {this.state.counter != this.state.maxCounter
+          ? <Spinner name="ball-beat" />
+          : <div></div>
+        }
+
       </div>
     );
   }
