@@ -14,8 +14,13 @@ import plogpy
 
 g_max_sample = None
 
+
 @click.group()
-@click.option('--samples', default=512, help="Max data samples for chart. Exceeded data samples will be downsampled. Default value is 512.")
+@click.option(
+    "--samples",
+    default=512,
+    help="Max data samples for chart. Exceeded data samples will be downsampled. Default value is 512.",
+)
 def plogpy_cmd(samples):
     """
     CLI tool for generating excel/csv/json from performance log.
@@ -25,7 +30,7 @@ def plogpy_cmd(samples):
 
 
 @plogpy_cmd.command()
-@click.option('--each', is_flag=True, help="Add more charts for each series.")
+@click.option("--each", is_flag=True, help="Add more charts for each series.")
 def tryit(each):
     """
     Generate excel file from sample log files.
@@ -43,26 +48,25 @@ def tryit(each):
         headpath = headpath.replace(log_dir, report_dir)
         ext = ".xlsx"
         reports.append(headpath + ext)
-    
+
     for log, report in zip(logs, reports):
         print(f"- Parsing - {log}")
         if True:
-            plogpy.generate_excel_report(log, report, 
-                each_chart=each,
-                max_samples=g_max_sample
+            plogpy.generate_excel_report(
+                log, report, each_chart=each, max_samples=g_max_sample
             )
         else:
-            plogpy.generate_html_report(log, report, 
-                max_samples=g_max_sample
-            )
+            plogpy.generate_html_report(log, report, max_samples=g_max_sample)
 
-#TODO: add report type -> ["xlsx", "html"]
+
+# TODO: add report type -> ["xlsx", "html"]
+
 
 @plogpy_cmd.command()
 @click.argument("in_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("out_path", type=click.Path(exists=False, dir_okay=True))
-@click.option('--recursive', is_flag=True, help="Check log directory recursively.")
-@click.option('--each', is_flag=True, help="Add more charts for each series.")
+@click.option("--recursive", is_flag=True, help="Check log directory recursively.")
+@click.option("--each", is_flag=True, help="Add more charts for each series.")
 def report(in_path, out_path, recursive, each):
     """
     Generate report file.
@@ -77,8 +81,8 @@ def report(in_path, out_path, recursive, each):
         dir_mode = True
         in_out_pairs = []
         if recursive:
-            #TODO:
-            for dirpath, _, files in os.walk(in_path): 
+            # TODO:
+            for dirpath, _, files in os.walk(in_path):
                 for f in files:
                     ipath = os.path.join(in_path, dirpath, f)
                     opath = os.path.join(out_path, dirpath, f) + ".xlsx"
@@ -95,15 +99,14 @@ def report(in_path, out_path, recursive, each):
         print("Error: incorrect in/out. 'file/file' or 'dir/dir' is supported.")
         sys.exit(1)
 
-
     for ipath, opath in in_out_pairs:
         if dir_mode and not plogpy.is_parsable(ipath):
             continue
         print(f"Parsing: in={ipath}, out={opath}")
-        #TODO: support multiprocessing
-        plogpy.generate_excel_report(ipath, opath,
-            max_samples=g_max_sample,
-            each_chart=each)
+        # TODO: support multiprocessing
+        plogpy.generate_excel_report(
+            ipath, opath, max_samples=g_max_sample, each_chart=each
+        )
 
 
 # TODO: maybe also show matching log pattern?
@@ -120,7 +123,7 @@ def supported_list():
 
 @plogpy_cmd.command()
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
-@click.option('--stats', is_flag=True, help="Output statistics CSV string.")
+@click.option("--stats", is_flag=True, help="Output statistics CSV string.")
 def csv(in_file, stats):
     """
     Output CSV string.
@@ -133,7 +136,7 @@ def csv(in_file, stats):
 
 @plogpy_cmd.command("json")
 @click.argument("in_file", type=click.Path(exists=True, dir_okay=False))
-@click.option('--stats', is_flag=True, help="Output statistics JSON string.")
+@click.option("--stats", is_flag=True, help="Output statistics JSON string.")
 def to_json(in_file, stats):
     """
     Output JSON string.
@@ -149,12 +152,14 @@ def to_html(in_file, out_file):
     """
     Output HTML.
     """
-    plogpy.generate_html_report(in_file, out_file, max_samples=g_max_sample, html_type="chartjs")
+    plogpy.generate_html_report(
+        in_file, out_file, max_samples=g_max_sample, html_type="chartjs"
+    )
 
 
 def main():
     plogpy_cmd()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

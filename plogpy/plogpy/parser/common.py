@@ -13,11 +13,13 @@ from plogpy.type import LogType
 class NoMatchedError(Exception):
     pass
 
+
 class PerfLogParser(abc.ABC):
     """
     Base class of parser.
     Each log parser class must inherit this class.
     """
+
     @staticmethod
     @abc.abstractmethod
     def regiter_info() -> tuple:
@@ -35,9 +37,11 @@ class PerfLogParser(abc.ABC):
         raise NotImplementedError
 
 
-#key=id, value=([regex,...], parser)
+# key=id, value=([regex,...], parser)
 LOG_PARSER_DICT = {}
 regexes_set = set()
+
+
 def __init_log_parsers():
     parser_classes = __get_parser_classes()
     for cls in parser_classes:
@@ -54,7 +58,7 @@ def __init_log_parsers():
             regexes_set.add(regex)
 
 
-#TODO: common.py is not suitable root path for checking parser classes??? 
+# TODO: common.py is not suitable root path for checking parser classes???
 def __get_parser_classes() -> list:
     """
     Collect list of PerfLogParser class from current path of the module (that is common.py).
@@ -62,7 +66,9 @@ def __get_parser_classes() -> list:
     # get modules
     path = os.path.dirname(__file__)
     mod_names = [modname for _, modname, _ in pkgutil.iter_modules(path=[path])]
-    modules = [importlib.import_module('.' + modname, __package__) for modname in mod_names]
+    modules = [
+        importlib.import_module("." + modname, __package__) for modname in mod_names
+    ]
 
     # get parser classes in each module
     parser_classes = []

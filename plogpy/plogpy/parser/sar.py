@@ -4,16 +4,16 @@ import pandas as pd
 
 from plogpy.parser.common import PerfLogParser
 
-#TODO: sar -n (IP|EIP|UDP|SOCK|ALL)
+# TODO: sar -n (IP|EIP|UDP|SOCK|ALL)
 
 
 class SarDiskLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -d)", 
-            [
-                r'DEV\s+tps\s+rkB/s\s+wkB/s\s+areq-sz\s+aqu-sz\s+await\s+svctm\s+%util'
-            ])
+        return (
+            "sar (sar -d)",
+            [r"DEV\s+tps\s+rkB/s\s+wkB/s\s+areq-sz\s+aqu-sz\s+await\s+svctm\s+%util"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -34,10 +34,10 @@ class SarDiskLogParser(PerfLogParser):
 class SarLoadAverageLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -q)", 
-            [
-                r'runq-sz\s+plist-sz\s+ldavg-1\s+ldavg-5\s+ldavg-15\s+blocked'
-            ])
+        return (
+            "sar (sar -q)",
+            [r"runq-sz\s+plist-sz\s+ldavg-1\s+ldavg-5\s+ldavg-15\s+blocked"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -56,28 +56,19 @@ class SarLoadAverageLogParser(PerfLogParser):
 class SarSysLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -w)", 
-            [
-                r'proc/s\s+cswch/s'
-            ])
+        return ("sar (sar -w)", [r"proc/s\s+cswch/s"])
 
     def parse(self, path):
         parser = SarLogParser()
         df = parser.parse(path)
-        multi_cols = [
-            ("Process", "proc/s"),
-            ("Context", "cswch/s"),
-        ]
+        multi_cols = [("Process", "proc/s"), ("Context", "cswch/s")]
         return add_group_column(df, multi_cols)
 
 
 class SarBlockLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -b)", 
-            [
-                r'tps\s+rtps\s+wtps\s+bread/s\s+bwrtn/s'
-            ])
+        return ("sar (sar -b)", [r"tps\s+rtps\s+wtps\s+bread/s\s+bwrtn/s"])
 
     def parse(self, path):
         parser = SarLogParser()
@@ -95,10 +86,10 @@ class SarBlockLogParser(PerfLogParser):
 class SarSwapLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -S)", 
-            [
-                r'kbswpfree\s+kbswpused\s+%swpused\s+kbswpcad\s+%swpcad'
-            ])
+        return (
+            "sar (sar -S)",
+            [r"kbswpfree\s+kbswpused\s+%swpused\s+kbswpcad\s+%swpcad"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -116,10 +107,12 @@ class SarSwapLogParser(PerfLogParser):
 class SarRamLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -r)", 
+        return (
+            "sar (sar -r)",
             [
-                r'kbmemfree\s+kbavail\s+kbmemused\s+%memused\s+kbbuffers\s+kbcached\s+kbcommit\s+%commit\s+kbactive\s+kbinact\s+kbdirty'
-            ])
+                r"kbmemfree\s+kbavail\s+kbmemused\s+%memused\s+kbbuffers\s+kbcached\s+kbcommit\s+%commit\s+kbactive\s+kbinact\s+kbdirty"
+            ],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -143,10 +136,10 @@ class SarRamLogParser(PerfLogParser):
 class SarEtcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n ETCP)", 
-            [
-                r'atmptf/s\s+estres/s\s+retrans/s\s+isegerr/s\s+orsts/s'
-            ])
+        return (
+            "sar (sar -n ETCP)",
+            [r"atmptf/s\s+estres/s\s+retrans/s\s+isegerr/s\s+orsts/s"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -157,10 +150,7 @@ class SarEtcpLogParser(PerfLogParser):
 class SarTcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n TCP)", 
-            [
-                r'active/s\s+passive/s\s+iseg/s\s+oseg/s\s+'
-            ])
+        return ("sar (sar -n TCP)", [r"active/s\s+passive/s\s+iseg/s\s+oseg/s\s+"])
 
     def parse(self, path):
         parser = SarLogParser()
@@ -170,18 +160,18 @@ class SarTcpLogParser(PerfLogParser):
             ("AcPs", "active/s"),
             ("AcPs", "passive/s"),
             ("Segment", "iseg/s"),
-            ("Segment", "oseg/s")
+            ("Segment", "oseg/s"),
         ]
         return add_group_column(df, multi_cols)
 
 
-#TODO: make it private someway
+# TODO: make it private someway
 def add_group_column(df: pd.DataFrame, tuples):
     ifaces = set([iface for iface, _ in df.columns.tolist()])
     multi_cols_with_ifaces = []
     for iface in ifaces:
         for group, col in tuples:
-            multi_cols_with_ifaces.append( (iface, group, col))
+            multi_cols_with_ifaces.append((iface, group, col))
     df.columns = pd.MultiIndex.from_tuples(multi_cols_with_ifaces)
     return df
 
@@ -189,10 +179,7 @@ def add_group_column(df: pd.DataFrame, tuples):
 class SarEdevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n EDEV)", 
-            [
-                r'IFACE\s+rxerr/s\s+txerr/s\s+coll/s\s'
-            ])
+        return ("sar (sar -n EDEV)", [r"IFACE\s+rxerr/s\s+txerr/s\s+coll/s\s"])
 
     def parse(self, path):
         parser = SarLogParser()
@@ -215,10 +202,7 @@ class SarEdevLogParser(PerfLogParser):
 class SarDevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n DEV)", 
-            [
-                r'IFACE\s+rxpck/s\s+txpck/s\s+rxkB/s\s+txkB/s'
-            ])
+        return ("sar (sar -n DEV)", [r"IFACE\s+rxpck/s\s+txpck/s\s+rxkB/s\s+txkB/s"])
 
     def parse(self, path):
         parser = SarLogParser()
@@ -232,7 +216,7 @@ class SarDevLogParser(PerfLogParser):
             ("Compress", "rxcmp/s"),
             ("Compress", "txcmp/s"),
             ("Multicast", "rxmcst/s"),
-            ("Usage", "%ifutil")
+            ("Usage", "%ifutil"),
         ]
         return add_group_column(df, multi_cols)
 
@@ -240,11 +224,13 @@ class SarDevLogParser(PerfLogParser):
 class SarCpuLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -u | -u ALL | -P ALL)", 
+        return (
+            "sar (sar -u | -u ALL | -P ALL)",
             [
-                r'CPU\s+\%user\s+\%nice\s+\%system\s+\%iowait\s+\%steal\s+\%idle',
-                r'CPU\s+\%usr\s+\%nice\s+\%sys\s+'
-            ])
+                r"CPU\s+\%user\s+\%nice\s+\%system\s+\%iowait\s+\%steal\s+\%idle",
+                r"CPU\s+\%usr\s+\%nice\s+\%sys\s+",
+            ],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -252,19 +238,20 @@ class SarCpuLogParser(PerfLogParser):
         return df
 
 
-class SarLogParser():
+class SarLogParser:
     """
     Common sar parser class.
     Used by other sar sub-commands.
     """
+
     def parse(self, path):
         with open(path) as f:
             node_type, cols = self.__parse_header(f)
-            df= self.__parse_data(f, node_type, cols)
+            df = self.__parse_data(f, node_type, cols)
             return df
 
     def __parse_data(self, f, node_type, cols):
-        #TODO: return multi-level-cols-df instead of dictionary
+        # TODO: return multi-level-cols-df instead of dictionary
         dataset_dict = collections.OrderedDict()
         for line in f:
             elems = self.__parse_sar_line(line)
@@ -278,21 +265,23 @@ class SarLogParser():
             else:
                 node = "system"
                 pos = 1
-            nums = [float(e)  for e in elems[pos:]]
+            nums = [float(e) for e in elems[pos:]]
             l = dataset_dict.setdefault(node, [])
             l.append(nums)
-        
+
         nodes = dataset_dict.keys()
         dfs = []
         for node in nodes:
-            node_cols = [ (f"{node_type}:{node}", col) for col in cols]
-            df = pd.DataFrame(dataset_dict[node], columns=pd.MultiIndex.from_tuples(node_cols))
+            node_cols = [(f"{node_type}:{node}", col) for col in cols]
+            df = pd.DataFrame(
+                dataset_dict[node], columns=pd.MultiIndex.from_tuples(node_cols)
+            )
             dfs.append(df)
-        
+
         final_df = dfs.pop(0)
         for df in dfs:
             final_df = pd.concat([final_df, df], axis=1)
-        
+
         return final_df
 
     def __parse_header(self, f) -> (str, list):
@@ -314,6 +303,6 @@ class SarLogParser():
         return line.split()
 
 
-#TODO: check date format
-#TODO: check average line
-#TODO: unify header line and empty line check process
+# TODO: check date format
+# TODO: check average line
+# TODO: unify header line and empty line check process

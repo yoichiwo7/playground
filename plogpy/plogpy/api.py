@@ -2,7 +2,12 @@ import os
 
 import pandas as pd
 
-from .parser.common import get_matched_parser, get_parser, get_supported_list, NoMatchedError
+from .parser.common import (
+    get_matched_parser,
+    get_parser,
+    get_supported_list,
+    NoMatchedError,
+)
 from .type import LogType
 from .writer import HtmlChartjsWriter, HtmlEchartsWriter, XlsxWriter, WriterConfig
 
@@ -11,11 +16,12 @@ from .writer import HtmlChartjsWriter, HtmlEchartsWriter, XlsxWriter, WriterConf
 Public APIs for plogpy
 """
 
+
 def get_supported_log_types() -> list:
     return get_supported_list()
 
 
-#TODO: checks all pattern twice (is_parsable and parse_log) -> make it more efficient in future.
+# TODO: checks all pattern twice (is_parsable and parse_log) -> make it more efficient in future.
 def is_parsable(input_path: str) -> bool:
     try:
         get_matched_parser(input_path)
@@ -24,7 +30,9 @@ def is_parsable(input_path: str) -> bool:
         return False
 
 
-def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> pd.DataFrame:
+def parse_log(
+    input_path: str, log_type: LogType = LogType.AUTO_DETECTION
+) -> pd.DataFrame:
     """
     Parse performance log.
     Returns dictionary.
@@ -38,36 +46,34 @@ def parse_log(input_path: str, log_type: LogType = LogType.AUTO_DETECTION) -> pd
 
 
 def generate_excel_report(
-        input_path: str, output_path: str,
-        max_samples: int = None,
-        each_chart: bool = False) -> None:
+    input_path: str, output_path: str, max_samples: int = None, each_chart: bool = False
+) -> None:
     """
     Parse peformance log and generate report.
     Generates report file.
     """
     df = parse_log(input_path)
-    
+
     writer = pd.ExcelWriter(output_path)
     file_name = os.path.split(output_path)[-1]
     name = os.path.splitext(file_name)[0]
     report_writer = XlsxWriter(
         writer_config=WriterConfig(chart_type_foreach=("line", "unstacked"))
     )
-    report_writer.write_df_to_excel(writer, df, name, 
-        max_samples=max_samples,
-        chart_each=each_chart) 
+    report_writer.write_df_to_excel(
+        writer, df, name, max_samples=max_samples, chart_each=each_chart
+    )
     writer.save()
 
 
-HTML_WRITER_DICT = {
-    "chartjs": HtmlChartjsWriter,
-    "echarts": HtmlEchartsWriter
-}
+HTML_WRITER_DICT = {"chartjs": HtmlChartjsWriter, "echarts": HtmlEchartsWriter}
+
+
 def generate_html_report(
     input_path: str,
     output_path: str,
     max_samples: int = None,
-    html_type: str = "chartjs"
+    html_type: str = "chartjs",
 ) -> None:
     df = parse_log(input_path)
     with open(output_path, "w") as writer:
@@ -75,12 +81,13 @@ def generate_html_report(
         report_writer.write_df_to_html(df, writer, max_samples=max_samples)
 
 
-#TODO: Need to process as javascript too. (Currently no chartjs in Notebook)
+# TODO: Need to process as javascript too. (Currently no chartjs in Notebook)
 def show(input_path, max_samples=512):
     empty_writer = None
     df = parse_log(input_path)
     report_writer = HtmlChartjsWriter()
     from IPython.display import display, HTML
+
     html_str = report_writer.write_df_to_html(df, empty_writer, max_samples=max_samples)
     display(HTML(html_str))
 
@@ -109,8 +116,8 @@ def generate_json(input_path: str, stats: bool) -> dict:
 
 
 def __put_json_object(df, d):
-    #TODO: not suited for large data. make it more efficient?
+    # TODO: not suited for large data. make it more efficient?
     columns = df.columns.tolist()
     d["index"] = df.index.tolist()
     d["column"] = [str(col) for col in columns]
-    d["values"] = { str(col):df[col].values.tolist() for col in columns}
+    d["values"] = {str(col): df[col].values.tolist() for col in columns}

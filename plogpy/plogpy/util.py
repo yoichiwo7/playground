@@ -3,17 +3,17 @@ import collections
 import pandas as pd
 
 
-def split_csv_line(line, trim_line_sep = True):
+def split_csv_line(line, trim_line_sep=True):
     if trim_line_sep:
         line = line.replace("\n", "").replace("\r", "")
-    return [s.replace('"', '') for s in line.split(",")]
+    return [s.replace('"', "") for s in line.split(",")]
 
 
 def get_parent_leaf_headers(df: pd.DataFrame) -> list:
     """
     Returns ordered dictionary. (key=parents_tuple, value=leaf_cols)
     """
-    #TODO: get leaf headers and parents -> {("cpu usage") : ["usr", "sys", ...]}
+    # TODO: get leaf headers and parents -> {("cpu usage") : ["usr", "sys", ...]}
     collected_headers = collections.OrderedDict()
     is_multi = isinstance(df.keys(), pd.core.indexes.multi.MultiIndex)
     if is_multi:
@@ -32,6 +32,7 @@ def get_parent_leaf_headers(df: pd.DataFrame) -> list:
             v.append(leaf)
         return collected_headers
 
+
 # TODO: currently very rough downsampling. make it better.
 def down_sample_df(df: pd.DataFrame, max_samples=1024, round_num=2) -> pd.DataFrame:
     """
@@ -41,10 +42,7 @@ def down_sample_df(df: pd.DataFrame, max_samples=1024, round_num=2) -> pd.DataFr
     skip_row_num = 1
     skip_row_num += int(len(df) / max_samples)
     s = (df.index.to_series() / skip_row_num).astype(int)
-    df = (df
-            .groupby(s)
-            .mean()
-            .set_index(s.index[0::skip_row_num]))
+    df = df.groupby(s).mean().set_index(s.index[0::skip_row_num])
     if round_num:
         df = df.round(round_num)
     return df
@@ -58,6 +56,6 @@ def get_colors(alpha=1.0, m=1.0) -> list:
         (255, 206, 86),
         (75, 192, 192),
         (153, 102, 255),
-        (255, 159, 64)
+        (255, 159, 64),
     ]
-    return [f'rgba({int(r*m)},{int(g*m)},{int(b*m)},{alpha})' for r,g,b in rgb_tuples]
+    return [f"rgba({int(r*m)},{int(g*m)},{int(b*m)},{alpha})" for r, g, b in rgb_tuples]
