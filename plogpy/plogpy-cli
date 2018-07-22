@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-import collections
 import csv as csv_mod
-import glob
 import json
+import glob
 import os
 from os.path import isdir, isfile
 import sys
 
 import click
-import pandas as pd
 
 import plogpy
 
@@ -60,8 +58,6 @@ def tryit(each):
 
 
 # TODO: add report type -> ["xlsx", "html"]
-
-
 @plogpy_cmd.command()
 @click.argument("in_path", type=click.Path(exists=True, dir_okay=True))
 @click.argument("out_path", type=click.Path(exists=False, dir_okay=True))

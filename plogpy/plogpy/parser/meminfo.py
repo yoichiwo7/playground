@@ -1,15 +1,12 @@
-import collections
-
 import pandas as pd
 
-from plogpy.parser.common import PerfLogParser
-from plogpy.util import split_csv_line
+from plogpy.parser.common import PerfLogParser, LogRegisterInfo
 
 
 class MeminfoLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("/proc/meminfo", [r"MemTotal:\s+\d+"])
+        return LogRegisterInfo(log_type="/proc/meminfo", patterns=[r"MemTotal:\s+\d+"])
 
     def parse(self, path):
         with open(path) as f:

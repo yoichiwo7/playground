@@ -1,5 +1,4 @@
 import abc
-import collections
 import importlib
 import os
 import pkgutil
@@ -14,6 +13,12 @@ class NoMatchedError(Exception):
     pass
 
 
+class LogRegisterInfo:
+    def __init__(self, log_type, patterns):
+        self.log_type = log_type
+        self.patterns = patterns
+
+
 class PerfLogParser(abc.ABC):
     """
     Base class of parser.
@@ -22,7 +27,7 @@ class PerfLogParser(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def regiter_info() -> tuple:
+    def regiter_info() -> LogRegisterInfo:
         """
         (unique_log_type, [regex, ...])
         """
@@ -44,18 +49,22 @@ regexes_set = set()
 
 def __init_log_parsers():
     parser_classes = __get_parser_classes()
-    for cls in parser_classes:
-        log_type, regexes = cls.regiter_info()
+    for cls_ref in parser_classes:
+        reg_info = cls_ref.regiter_info()
+        log_type = reg_info.log_type
+        patterns = reg_info.patterns
         # Check duplication
         if log_type in LOG_PARSER_DICT:
             raise Exception(f"Log type '{log_type}' already exists.")
         # Add log a parser entry
-        LOG_PARSER_DICT[log_type] = (regexes, cls())
-        for regex in regexes:
+        LOG_PARSER_DICT[log_type] = (patterns, cls_ref())
+        for pattern in patterns:
             for t, rs in LOG_PARSER_DICT.items():
-                if regex in rs:
-                    raise Exception(f"Duplicated '{regex}'. Log type=({log_type}, {t})")
-            regexes_set.add(regex)
+                if pattern in rs:
+                    raise Exception(
+                        f"Duplicated '{pattern}'. Log type=({log_type}, {t})"
+                    )
+            regexes_set.add(pattern)
 
 
 # TODO: common.py is not suitable root path for checking parser classes???
@@ -88,8 +97,7 @@ def __is_parser_class(class_ref) -> bool:
     try:
         if issubclass(class_ref, PerfLogParser) and class_ref is not PerfLogParser:
             return True
-    except:
-        # Type Error (ex. dict)
+    except TypeError:
         pass
     return False
 

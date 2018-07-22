@@ -2,7 +2,7 @@ import collections
 
 import pandas as pd
 
-from plogpy.parser.common import PerfLogParser
+from plogpy.parser.common import PerfLogParser, LogRegisterInfo
 
 # TODO: sar -n (IP|EIP|UDP|SOCK|ALL)
 
@@ -10,9 +10,11 @@ from plogpy.parser.common import PerfLogParser
 class SarDiskLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return (
-            "sar (sar -d)",
-            [r"DEV\s+tps\s+rkB/s\s+wkB/s\s+areq-sz\s+aqu-sz\s+await\s+svctm\s+%util"],
+        return LogRegisterInfo(
+            log_type="sar (sar -d)",
+            patterns=[
+                r"DEV\s+tps\s+rkB/s\s+wkB/s\s+areq-sz\s+aqu-sz\s+await\s+svctm\s+%util"
+            ],
         )
 
     def parse(self, path):
@@ -34,9 +36,9 @@ class SarDiskLogParser(PerfLogParser):
 class SarLoadAverageLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return (
-            "sar (sar -q)",
-            [r"runq-sz\s+plist-sz\s+ldavg-1\s+ldavg-5\s+ldavg-15\s+blocked"],
+        return LogRegisterInfo(
+            log_type="sar (sar -q)",
+            patterns=[r"runq-sz\s+plist-sz\s+ldavg-1\s+ldavg-5\s+ldavg-15\s+blocked"],
         )
 
     def parse(self, path):
@@ -56,7 +58,7 @@ class SarLoadAverageLogParser(PerfLogParser):
 class SarSysLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -w)", [r"proc/s\s+cswch/s"])
+        return LogRegisterInfo(log_type="sar (sar -w)", patterns=[r"proc/s\s+cswch/s"])
 
     def parse(self, path):
         parser = SarLogParser()
@@ -68,7 +70,9 @@ class SarSysLogParser(PerfLogParser):
 class SarBlockLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -b)", [r"tps\s+rtps\s+wtps\s+bread/s\s+bwrtn/s"])
+        return LogRegisterInfo(
+            log_type="sar (sar -b)", patterns=[r"tps\s+rtps\s+wtps\s+bread/s\s+bwrtn/s"]
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -86,9 +90,9 @@ class SarBlockLogParser(PerfLogParser):
 class SarSwapLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return (
-            "sar (sar -S)",
-            [r"kbswpfree\s+kbswpused\s+%swpused\s+kbswpcad\s+%swpcad"],
+        return LogRegisterInfo(
+            log_type="sar (sar -S)",
+            patterns=[r"kbswpfree\s+kbswpused\s+%swpused\s+kbswpcad\s+%swpcad"],
         )
 
     def parse(self, path):
@@ -107,9 +111,9 @@ class SarSwapLogParser(PerfLogParser):
 class SarRamLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return (
-            "sar (sar -r)",
-            [
+        return LogRegisterInfo(
+            log_type="sar (sar -r)",
+            patterns=[
                 r"kbmemfree\s+kbavail\s+kbmemused\s+%memused\s+kbbuffers\s+kbcached\s+kbcommit\s+%commit\s+kbactive\s+kbinact\s+kbdirty"
             ],
         )
@@ -136,9 +140,9 @@ class SarRamLogParser(PerfLogParser):
 class SarEtcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return (
-            "sar (sar -n ETCP)",
-            [r"atmptf/s\s+estres/s\s+retrans/s\s+isegerr/s\s+orsts/s"],
+        return LogRegisterInfo(
+            log_type="sar (sar -n ETCP)",
+            patterns=[r"atmptf/s\s+estres/s\s+retrans/s\s+isegerr/s\s+orsts/s"],
         )
 
     def parse(self, path):
@@ -150,7 +154,10 @@ class SarEtcpLogParser(PerfLogParser):
 class SarTcpLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n TCP)", [r"active/s\s+passive/s\s+iseg/s\s+oseg/s\s+"])
+        return LogRegisterInfo(
+            log_type="sar (sar -n TCP)",
+            patterns=[r"active/s\s+passive/s\s+iseg/s\s+oseg/s\s+"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -179,7 +186,10 @@ def add_group_column(df: pd.DataFrame, tuples):
 class SarEdevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n EDEV)", [r"IFACE\s+rxerr/s\s+txerr/s\s+coll/s\s"])
+        return LogRegisterInfo(
+            log_type="sar (sar -n EDEV)",
+            patterns=[r"IFACE\s+rxerr/s\s+txerr/s\s+coll/s\s"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -202,7 +212,10 @@ class SarEdevLogParser(PerfLogParser):
 class SarDevLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("sar (sar -n DEV)", [r"IFACE\s+rxpck/s\s+txpck/s\s+rxkB/s\s+txkB/s"])
+        return LogRegisterInfo(
+            log_type="sar (sar -n DEV)",
+            patterns=[r"IFACE\s+rxpck/s\s+txpck/s\s+rxkB/s\s+txkB/s"],
+        )
 
     def parse(self, path):
         parser = SarLogParser()
@@ -224,9 +237,9 @@ class SarDevLogParser(PerfLogParser):
 class SarCpuLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return (
-            "sar (sar -u | -u ALL | -P ALL)",
-            [
+        return LogRegisterInfo(
+            log_type="sar (sar -u | -u ALL | -P ALL)",
+            patterns=[
                 r"CPU\s+\%user\s+\%nice\s+\%system\s+\%iowait\s+\%steal\s+\%idle",
                 r"CPU\s+\%usr\s+\%nice\s+\%sys\s+",
             ],
@@ -244,13 +257,13 @@ class SarLogParser:
     Used by other sar sub-commands.
     """
 
-    def parse(self, path):
+    def parse(self, path) -> pd.DataFrame:
         with open(path) as f:
             node_type, cols = self.__parse_header(f)
             df = self.__parse_data(f, node_type, cols)
             return df
 
-    def __parse_data(self, f, node_type, cols):
+    def __parse_data(self, f, node_type, cols) -> pd.DataFrame:
         # TODO: return multi-level-cols-df instead of dictionary
         dataset_dict = collections.OrderedDict()
         for line in f:
@@ -266,8 +279,8 @@ class SarLogParser:
                 node = "system"
                 pos = 1
             nums = [float(e) for e in elems[pos:]]
-            l = dataset_dict.setdefault(node, [])
-            l.append(nums)
+            data_columns = dataset_dict.setdefault(node, [])
+            data_columns.append(nums)
 
         nodes = dataset_dict.keys()
         dfs = []

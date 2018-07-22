@@ -2,14 +2,16 @@ import collections
 
 import pandas as pd
 
-from plogpy.parser.common import PerfLogParser
+from plogpy.parser.common import PerfLogParser, LogRegisterInfo
 from plogpy.util import split_csv_line
 
 
 class DstatLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return ("dstat", [r"Dstat \d+\.\d+.\d+ CSV output"])
+        return LogRegisterInfo(
+            log_type="dstat", patterns=[r"Dstat \d+\.\d+.\d+ CSV output"]
+        )
 
     def parse(self, path):
         with open(path) as f:
