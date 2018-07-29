@@ -6,7 +6,7 @@ from plogpy.parser.common import PerfLogParser, LogRegisterInfo
 
 # TODO:
 # [x] vmstat
-# [ ] vmstat -a (active/inactive)
+# [x] vmstat -a (active/inactive)
 # [ ] vmstat -d (disk)
 # [ ] vmstat -t (use timestamp) ???
 
@@ -14,7 +14,9 @@ from plogpy.parser.common import PerfLogParser, LogRegisterInfo
 class VmstatLogParser(PerfLogParser):
     @staticmethod
     def regiter_info():
-        return LogRegisterInfo(log_type="vmstat", patterns=[r"procs .*?-memory-.*"])
+        return LogRegisterInfo(
+            log_type="vmstat (  | -a)", patterns=[r"procs .*?-memory-.*"]
+        )
 
     def parse(self, path) -> pd.DataFrame:
         with open(path) as f:
