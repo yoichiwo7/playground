@@ -12,13 +12,13 @@ pandas = "*"
 xlsxwriter = "*"
 click = "*"
 "jinja2" = "*"
-ipython = "*"
 
 [dev-packages]
 pytest = "*"
 rope = "*"
-black = "*"
 "flake8" = "*"
+mypy = "*"
+black = "*"
 
 [requires]
 python_version = "3.6"
