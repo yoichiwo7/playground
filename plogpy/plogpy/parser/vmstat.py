@@ -33,7 +33,6 @@ class VmstatLogParser(PerfLogParser):
                 continue
             values = [float(e) for e in elems]
             rows.append(values)
-        # TODO: generate df and return it
         df = pd.DataFrame(rows, columns=pd.MultiIndex.from_tuples(multi_level_cols))
         return df
 
