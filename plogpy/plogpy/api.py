@@ -105,7 +105,7 @@ def generate_json(input_path: str, stats: bool) -> dict:
         }
     }
     """
-    d = {}
+    d: dict = {}
     df = parse_log(input_path)
     if stats:
         d["stats"] = {}

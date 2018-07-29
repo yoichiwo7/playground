@@ -262,7 +262,7 @@ class XlsxWriter:
         row_end_pos = row_start_pos + len(df_sampled_data)
 
         # TODO: adjust column width for DATA/STATS sheets.
-        ## add DATA
+        # add DATA
         sheet_name_data = f"{name}_DATA"
         df_data.to_excel(
             writer,
@@ -272,11 +272,11 @@ class XlsxWriter:
             freeze_panes=(row_start_pos, FIXED_COL_POS),
         )
 
-        ## add STAT
+        # add STAT
         sheet_name_stats = f"{name}_STATS"
         df_stats.to_excel(writer, sheet_name_stats, float_format="%.2f", index=index)
 
-        ## add CHART
+        # add CHART
         sheet_name_sampled_data = f"{name}_DS"
         df_sampled_data.to_excel(
             writer,

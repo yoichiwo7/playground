@@ -33,7 +33,7 @@ class MeminfoLogParser(PerfLogParser):
 
     def __parse_headers(self, f) -> list:
         # TODO: check timestamp line if it exists?
-        headers = []
+        headers: list = []
         for line in f:
             keyvalue = line.split(": ")
             if len(keyvalue) != 2:

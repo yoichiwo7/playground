@@ -9,12 +9,12 @@ def split_csv_line(line, trim_line_sep=True):
     return [s.replace('"', "") for s in line.split(",")]
 
 
-def get_parent_leaf_headers(df: pd.DataFrame) -> list:
+def get_parent_leaf_headers(df: pd.DataFrame) -> collections.OrderedDict:
     """
     Returns ordered dictionary. (key=parents_tuple, value=leaf_cols)
     """
     # TODO: get leaf headers and parents -> {("cpu usage") : ["usr", "sys", ...]}
-    collected_headers = collections.OrderedDict()
+    collected_headers: collections.OrderedDict = collections.OrderedDict()
     is_multi = isinstance(df.keys(), pd.core.indexes.multi.MultiIndex)
     if is_multi:
         # Multi level

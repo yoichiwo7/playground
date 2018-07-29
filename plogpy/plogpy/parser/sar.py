@@ -265,7 +265,7 @@ class SarLogParser:
 
     def __parse_data(self, f, node_type, cols) -> pd.DataFrame:
         # TODO: return multi-level-cols-df instead of dictionary
-        dataset_dict = collections.OrderedDict()
+        dataset_dict: collections.OrderedDict = collections.OrderedDict()
         for line in f:
             elems = self.__parse_sar_line(line)
             if len(elems) == 0 or (len(elems) > 1 and elems[1] == node_type):

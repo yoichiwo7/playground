@@ -43,7 +43,7 @@ class PerfLogParser(abc.ABC):
 
 
 # key=id, value=([regex,...], parser)
-LOG_PARSER_DICT = {}
+LOG_PARSER_DICT: dict = {}
 regexes_set = set()
 
 
